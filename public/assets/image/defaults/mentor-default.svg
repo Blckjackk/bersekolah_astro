@@ -1,0 +1,8 @@
+<!-- Default Mentor Image -->
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" rx="150" fill="#ddd6fe"/>
+  <circle cx="150" cy="110" r="40" fill="#8b5cf6"/>
+  <path d="M75 220c0-41.42 33.58-75 75-75s75 33.58 75 75" fill="#8b5cf6"/>
+  <rect x="120" y="60" width="60" height="8" rx="4" fill="#7c3aed"/>
+  <rect x="120" y="75" width="45" height="6" rx="3" fill="#a855f7"/>
+</svg>

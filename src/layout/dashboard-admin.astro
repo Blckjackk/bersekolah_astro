@@ -1,18 +1,79 @@
 ---
 import "../styles/global.css";
+import { AppSidebar } from "../component/admin/app-sidebar";
+import { SidebarProvider } from "../contexts/SidebarContext";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Admin Dashboard" } = Astro.props;
 ---
+
 <html lang="id">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Bersekolah - Admin Dashboard</title>
-    <link rel="icon" href="/storage/logo-bersekolah-08.png" type="image/x-icon">
+    <title>{title} - Bersekolah Admin</title>
+    <link rel="icon" href="/assets/image/company-profile/logo-bersekolah-08.png" type="image/x-icon">
   </head>
-  <body>
-    <div id="admin-dashboard">
-      <slot />
-    </div>
+  <body class="min-h-screen bg-gray-50">
+    <SidebarProvider client:load>
+      <div class="relative flex min-h-screen">
+        <AppSidebar client:load />
+        
+        <div class="flex-1 h-screen overflow-auto">
+          <main class="flex-1 pb-8">
+            <div class="py-6">
+              <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                <div class="flex items-center justify-between mb-4">
+                  <h1 class="text-2xl font-semibold text-gray-900">{title}</h1>
+                </div>
+                <div class="bg-white rounded-lg shadow">
+                  <div class="px-4 py-5 sm:p-6">
+                    <slot />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+
+    <style>
+      /* Handle sidebar layout */
+      .flex-1 {
+        margin-left: var(--sidebar-width, 4rem);
+        transition: margin-left 0.2s ease;
+      }
+      
+      @media (max-width: 768px) {
+        .flex-1 {
+          margin-left: 0;
+        }
+      }
+
+      /* Custom scrollbar */
+      .overflow-auto {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+      }
+
+      .overflow-auto::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .overflow-auto::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .overflow-auto::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+      }
+    </style>
   </body>
 </html>

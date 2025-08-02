@@ -4,7 +4,7 @@ import { GraduationCap } from 'lucide-react';
 const MentorCard = ({ mentor }) => {
   // Helper function to determine the correct image source
   const getImageSrc = () => {
-    if (!mentor) return '/storage/mentor/default.jpg';
+    if (!mentor) return '/assets/image/company-profile/default-mentor.jpg';
     
     // If image property is set, use it directly 
     if (mentor.image) {
@@ -22,7 +22,7 @@ const MentorCard = ({ mentor }) => {
     }
     
     // Final fallback
-    return '/storage/mentor/default.jpg';
+    return '/assets/image/company-profile/default-mentor.jpg';
   };
   
   return (
@@ -33,7 +33,7 @@ const MentorCard = ({ mentor }) => {
             src={getImageSrc()}
             alt={mentor.name} 
             className="object-cover w-full h-full"
-            onError={e => { e.target.src = '/storage/mentor/default.jpg'; }}
+            onError={e => { e.target.src = '/assets/image/company-profile/default-mentor.jpg'; }}
           />
           
           {/* Gradient Overlay */}

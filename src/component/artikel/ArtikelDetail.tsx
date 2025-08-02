@@ -19,7 +19,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
 
   // Helper function to get correct image URL
   const getImageUrl = (article: Article | null) => {
-    if (!article) return "/storage/artikel/default.jpg";
+    if (!article) return "http://localhost:8000/storage/defaults/artikel-default.jpg";
 
     // Check for gambar_url first (if API provides full URL)
     if (article.gambar_url) {
@@ -33,17 +33,17 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
         return article.gambar;
       }
 
-      // Check if it already has /storage/ prefix
+      // Check if it already has /storage/ prefix from API response
       if (article.gambar.startsWith("/storage/")) {
-        return article.gambar;
+        return `http://localhost:8000${article.gambar}`;
       }
 
-      // Otherwise, add the correct storage path
-      return `/storage/artikel/${article.gambar}`;
+      // Otherwise, construct Laravel storage path for admin/artikel folder
+      return `http://localhost:8000/storage/admin/artikel/${article.gambar}`;
     }
 
-    // Default fallback
-    return "/storage/artikel/default.jpg";
+    // Default fallback to Laravel storage defaults
+    return "http://localhost:8000/storage/defaults/artikel-default.jpg";
   };
 
   useEffect(() => {

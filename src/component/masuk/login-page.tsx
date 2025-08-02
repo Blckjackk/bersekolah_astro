@@ -74,7 +74,7 @@ export default function LoginPage() {
         </div>
       </div>      <div className="hidden relative bg-muted lg:block">
         <img
-          src="/storage/ProgramBeasiswa.jpg"
+          src="/assets/image/auth/program-beasiswa.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />

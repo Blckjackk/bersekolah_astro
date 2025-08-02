@@ -12,9 +12,13 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Eye
+  Eye,
+  Download
 } from "lucide-react";
 
+// Import komponen UI
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -39,7 +43,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog";
-import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import {
   DropdownMenu,

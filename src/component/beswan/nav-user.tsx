@@ -63,7 +63,7 @@ const defaultUser: User = {
   name: "Guest User",
   email: "guest@example.com",
   role: "guest",
-  avatar: "/storage/users/default-avatar.jpg",
+  avatar: "/assets/image/defaults/user-default.jpg",
 };
 
 export function NavUser() {
@@ -125,7 +125,7 @@ export function NavUser() {
             email: userResponse.email,
             phone: userResponse.phone,
             role: userResponse.role || 'Siswa',
-            avatar: userResponse.avatar || '/storage/users/default-avatar.jpg',
+            avatar: userResponse.avatar || '/assets/image/defaults/user-default.svg',
             status: userResponse.status,
             created_at: userResponse.created_at,
             updated_at: userResponse.updated_at,
@@ -195,7 +195,7 @@ export function NavUser() {
           const userWithDefaults = {
             ...parsedOldUser,
             role: parsedOldUser.role || 'Siswa',
-            avatar: parsedOldUser.avatar || '/storage/users/default-avatar.jpg'
+            avatar: parsedOldUser.avatar || '/assets/image/defaults/user-default.svg'
           };
           
           setUser(userWithDefaults);

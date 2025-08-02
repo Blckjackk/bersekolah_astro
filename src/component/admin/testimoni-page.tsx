@@ -455,13 +455,13 @@ export default function TestimoniPage() {
                         <img 
                           src={
                             item.foto_testimoni_url 
-                            || (item.foto_testimoni ? `/storage/testimoni/${item.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                            || (item.foto_testimoni ? `/storage/testimoni/${item.foto_testimoni}` : '/assets/image/defaults/testimoni-default.jpg')
                           }
                           alt={item.nama}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/storage/testimoni/default.jpg';
+                            target.src = '/assets/image/defaults/testimoni-default.jpg';
                           }}
                         />
                       </div>
@@ -687,13 +687,13 @@ export default function TestimoniPage() {
                       <img
                         src={
                           selectedTestimoni.foto_testimoni_url 
-                          || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                          || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/assets/image/defaults/testimoni-default.jpg')
                         }
                         alt="Foto testimoni saat ini"
                         className="object-cover w-full h-full"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/storage/testimoni/default.jpg';
+                          target.src = '/assets/image/defaults/testimoni-default.jpg';
                         }}
                       />
                     </div>
@@ -763,13 +763,13 @@ export default function TestimoniPage() {
                   <img
                     src={
                       selectedTestimoni.foto_testimoni_url 
-                      || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/storage/testimoni/default.jpg')
+                      || (selectedTestimoni.foto_testimoni ? `/storage/testimoni/${selectedTestimoni.foto_testimoni}` : '/assets/image/defaults/testimoni-default.jpg')
                     }
                     alt={selectedTestimoni?.nama}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = '/storage/testimoni/default.jpg';
+                      target.src = '/assets/image/defaults/testimoni-default.jpg';
                     }}
                   />
                 </div>

@@ -14,9 +14,21 @@ const Testimonial = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
+        console.log('Fetching testimonials from:', 'http://localhost:8000/api/testimoni');
         const response = await fetch('http://localhost:8000/api/testimoni') // sesuaikan dengan API Laravel
+        
+        console.log('Testimoni API Response Status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.status}`);
+        }
+        
         const data = await response.json()
+        console.log('Raw testimoni data from API:', data);
+        
         const arr = Array.isArray(data.data) ? data.data : [];
+        console.log('Testimoni array:', arr);
+        console.log('Active testimonials:', arr.filter(item => item.status === 'active'));
 
         // Filter dan map ke format frontend
         const filtered = arr.filter(item => item.status === 'active').map(item => ({
@@ -25,9 +37,10 @@ const Testimonial = () => {
           role: item.angkatan_beswan,
           company: item.sekarang_dimana,
           quote: item.isi_testimoni,
-          image: item.foto_testimoni_url || '/storage/testimoni/default.jpg'
-        }))
+          image: item.foto_testimoni_url || '/assets/image/defaults/testimoni-default.jpg'
+        }));
 
+        console.log('Filtered testimonials:', filtered);
         setTestimonials(filtered)
         setLoading(false)
       } catch (error) {
@@ -109,7 +122,7 @@ const Testimonial = () => {
 
         <div className="relative max-w-6xl mx-auto">
           <div 
-            className="grid items-center grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 touch-pan-x select-none overflow-hidden"
+            className="grid items-center grid-cols-1 gap-8 overflow-hidden select-none md:grid-cols-2 lg:gap-12 touch-pan-x"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -124,7 +137,7 @@ const Testimonial = () => {
             }}
           >
             <div className="relative order-2 hidden lg:order-1 md:block">
-              <div className="relative w-full max-w-md mx-auto lg:mx-0 overflow-hidden">
+              <div className="relative w-full max-w-md mx-auto overflow-hidden lg:mx-0">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentTestimonial.id}
@@ -144,7 +157,7 @@ const Testimonial = () => {
                         src={currentTestimonial.image}
                         alt={currentTestimonial.name}
                         className="object-cover w-full h-96"
-                        onError={e => { e.target.src = '/storage/testimoni/default.jpg'; }}
+                        onError={e => { e.target.src = '/assets/image/defaults/testimoni-default.jpg'; }}
                       />
                     </div>
 
@@ -155,7 +168,7 @@ const Testimonial = () => {
                       transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div 
-                      className="absolute w-32 h-32 bg-indigo-100 -right-6 -bottom-6 rounded-2xl opacity-50"
+                      className="absolute w-32 h-32 bg-indigo-100 opacity-50 -right-6 -bottom-6 rounded-2xl"
                       animate={{ rotate: [0, -2, 2, 0] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                     />
@@ -191,7 +204,7 @@ const Testimonial = () => {
                           src={currentTestimonial.image}
                           alt={currentTestimonial.name}
                           className="w-12 h-12"
-                          onError={e => { e.target.src = '/storage/testimoni/default.jpg'; }}
+                          onError={e => { e.target.src = '/assets/image/defaults/testimoni-default.jpg'; }}
                         />
                         <div>
                           <h4 className="text-lg font-bold text-gray-900">{currentTestimonial.name}</h4>
@@ -211,7 +224,7 @@ const Testimonial = () => {
             <Button 
               isIconOnly 
               variant="flat" 
-              className="backdrop-blur-sm bg-white/80 hover:bg-white transition-all duration-200" 
+              className="transition-all duration-200 backdrop-blur-sm bg-white/80 hover:bg-white" 
               onPress={prevTestimonial}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -236,7 +249,7 @@ const Testimonial = () => {
             <Button 
               isIconOnly 
               variant="flat" 
-              className="backdrop-blur-sm bg-white/80 hover:bg-white transition-all duration-200" 
+              className="transition-all duration-200 backdrop-blur-sm bg-white/80 hover:bg-white" 
               onPress={nextTestimonial}
             >
               <ChevronRight className="w-5 h-5" />
@@ -246,7 +259,7 @@ const Testimonial = () => {
           <div className="mt-4 text-center">
             <span className="text-sm text-gray-500">
               {String(currentIndex + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
-            </span>z
+            </span>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ const MentorSection = () => {
             name: mentor.name,
             position: mentor.position || "Mentor Bersekolah",
             description: mentor.description || "Mentor Bersekolah yang berdedikasi untuk membantu para beswan.",
-            image: mentor.photo_url || (mentor.photo ? `/storage/mentor/${mentor.photo}` : "/storage/mentor/default.jpg"),
+            image: mentor.photo_url || "/assets/image/defaults/mentor-default.jpg",
             photo: mentor.photo,
             photo_url: mentor.photo_url,
             location: mentor.location || "Indonesia",

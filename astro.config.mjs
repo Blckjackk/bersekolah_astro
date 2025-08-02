@@ -20,6 +20,9 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': '/src'
+      },
+      alias: {
+        '@': '/src'
       }
     },
     optimizeDeps: {

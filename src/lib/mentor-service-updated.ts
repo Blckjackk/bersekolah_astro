@@ -24,9 +24,14 @@ export const MentorService = {
   formatPhotoUrl: (mentor: any): Mentor => {
     if (!mentor) return mentor;
     
-    // Make sure photo_url is available and in the correct format
+    // If photo_url already exists from API, use it (API already provides correct URL)
+    if (mentor.photo_url) {
+      return mentor;
+    }
+    
+    // Only format if photo_url is missing but photo exists
     if (!mentor.photo_url && mentor.photo) {
-      mentor.photo_url = `/storage/mentor/${mentor.photo}`;
+      mentor.photo_url = `http://localhost:8000/storage/admin/mentor/${mentor.photo}`;
     }
     
     return mentor;
@@ -35,20 +40,33 @@ export const MentorService = {
   // Mendapatkan semua mentor dari API
   getAllMentors: async () => {
     try {
-      const response = await fetch(`${API_URL}/mentors`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
-        }
-      });
+      // Auth token is optional for public mentor data
+      const token = localStorage.getItem('bersekolah_auth_token');
+      const headers: any = {
+        'Accept': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      console.log('Fetching mentors from:', `${API_URL}/mentors`);
+      console.log('Using auth token:', !!token);
+      
+      const response = await fetch(`${API_URL}/mentors`, { headers });
 
-      if (!response.ok) throw new Error('Failed to fetch mentors');
+      if (!response.ok) {
+        console.error('API Response Status:', response.status);
+        console.error('API Response Text:', await response.text());
+        throw new Error('Failed to fetch mentors');
+      }
 
       const data = await response.json();
       console.log('Raw mentor data from API:', data);
       
-      // Format photo URLs for all mentors
+      // Format photo URLs for all mentors (but API should already provide correct URLs)
       const mentors = (data.data || []).map((mentor: any) => MentorService.formatPhotoUrl(mentor));
+      console.log('Formatted mentors:', mentors);
       
       return mentors;
     } catch (error) {

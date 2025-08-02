@@ -15,12 +15,12 @@ export const MentorService = {
   getImageUrl: (imagePath?: string): string => {
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/storage/mentor/default.jpg';
+      return '/assets/image/company-profile/default-mentor.jpg';
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return '/storage/mentor/default.jpg';
+      return '/assets/image/company-profile/default-mentor.jpg';
     }
     
     // If the path already starts with /storage, return as is (for storage files)

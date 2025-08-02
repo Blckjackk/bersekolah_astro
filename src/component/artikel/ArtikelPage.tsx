@@ -44,22 +44,22 @@ const ArtikelPage = () => {
         return article.gambar;
       }
       
-      // Check if it already has /storage/ prefix
+      // Check if it already has /storage/ prefix from API response
       if (article.gambar.startsWith('/storage/')) {
-        return article.gambar;
+        return `http://localhost:8000${article.gambar}`;
       }
       
-      // Otherwise, add the correct storage path
-      return `/storage/artikel/${article.gambar}`;
+      // Otherwise, construct Laravel storage path for admin/artikel folder
+      return `http://localhost:8000/storage/admin/artikel/${article.gambar}`;
     }
     
-    // Default fallback
-    return "/storage/artikel/default.jpg";
+    // Default fallback to Laravel storage defaults
+    return "http://localhost:8000/storage/defaults/artikel-default.jpg";
   };
 
   // Fetch 6 artikel terbaru (tanpa filter)
   useEffect(() => {
-    fetch("http://localhost:8000/api/konten?per_page=6")
+    fetch("/api/konten?per_page=6")
       .then((res) => res.json())
       .then((data) => {
         console.log("API Response:", data);
@@ -82,7 +82,7 @@ const ArtikelPage = () => {
   // Fetch kategori artikel (default: semua, bisa filter)
   const fetchCategoryArticles = async (cat: string, pageNum = 1) => {
     setCatLoading(true);
-    let url = `http://localhost:8000/api/konten?page=${pageNum}&per_page=6`;
+    let url = `/api/konten?page=${pageNum}&per_page=6`;
     if (cat && cat !== "Semua") {
       url += `&category=${encodeURIComponent(cat)}`;
     }
@@ -161,14 +161,14 @@ const ArtikelPage = () => {
           style={{ backgroundImage: "url('/assets/image/graduation-cap-sits-top-stack-books.jpg')" }}
         ></div>
         <div className="container relative z-10 px-4 mx-auto text-center text-white sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl">
+          <div className="max-w-5xl mx-auto">
             <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl sm:mb-6">
               Artikel & Berita
               <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-200">
                 Seputar Pendidikan
               </span>
             </h1>
-            <p className="mx-auto mb-6 max-w-4xl text-base font-light leading-relaxed opacity-90 sm:text-lg md:text-xl lg:text-2xl sm:mb-8">
+            <p className="max-w-4xl mx-auto mb-6 text-base font-light leading-relaxed opacity-90 sm:text-lg md:text-xl lg:text-2xl sm:mb-8">
               Temukan artikel informatif dan inspiratif seputar pendidikan, beasiswa, dan pengembangan diri.
             </p>
           </div>
@@ -183,7 +183,7 @@ const ArtikelPage = () => {
               Artikel Terbaru
             </h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#406386] to-blue-400 mx-auto mb-6"></div>
-            <p className="mx-auto max-w-2xl text-gray-600">
+            <p className="max-w-2xl mx-auto text-gray-600">
               Dapatkan informasi terkini seputar pendidikan dan program beasiswa dari tim Bersekolah
             </p>
           </div>
@@ -192,7 +192,7 @@ const ArtikelPage = () => {
             {latestArticles.map((article, index) => (
               <Card
                 key={index}
-                className="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-md transition-all duration-300 group hover:shadow-xl"
+                className="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-md rounded-2xl group hover:shadow-xl"
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
@@ -200,9 +200,9 @@ const ArtikelPage = () => {
                     alt={article.judul_halaman}
                     width={400}
                     height={225}
-                    className="object-cover absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity duration-300 from-black/60 via-black/20 group-hover:opacity-100" />
+                  <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-t to-transparent from-black/60 via-black/20 group-hover:opacity-100" />
                   <span className="absolute top-4 left-4 bg-[#406386]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
                     {article.category}
                   </span>
@@ -226,7 +226,7 @@ const ArtikelPage = () => {
                     <a href={`/artikel-detail?id=${article.id}`}>
                       <span>Baca Selengkapnya</span>
                       <svg
-                        className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                        className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -250,7 +250,7 @@ const ArtikelPage = () => {
               Kategori Artikel
             </h2>
             <div className="w-16 h-1 bg-gradient-to-r from-[#406386] to-blue-400 mx-auto mb-6"></div>
-            <div className="flex flex-wrap gap-2 justify-center mb-10">
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
               {CATEGORIES.map((cat, idx) => (
                 <Button
                   key={idx}
@@ -267,7 +267,7 @@ const ArtikelPage = () => {
             {filteredCategoryArticles.map((article, index) => (
               <Card
                 key={index}
-                className="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-md transition-all duration-300 group hover:shadow-xl"
+                className="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-md rounded-2xl group hover:shadow-xl"
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
@@ -275,9 +275,9 @@ const ArtikelPage = () => {
                     alt={article.judul_halaman}
                     width={400}
                     height={225}
-                    className="object-cover absolute inset-0 w-full h-full transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity duration-300 from-black/60 via-black/20 group-hover:opacity-100" />
+                  <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-t to-transparent from-black/60 via-black/20 group-hover:opacity-100" />
                   <span className="absolute top-4 left-4 bg-[#406386]/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
                     {article.category}
                   </span>
@@ -301,7 +301,7 @@ const ArtikelPage = () => {
                     <a href={`/artikel-detail?id=${article.id}`}>
                       <span>Baca Selengkapnya</span>
                       <svg
-                        className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                        className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"

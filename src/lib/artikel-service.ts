@@ -36,17 +36,22 @@ export const ArtikelService = {
   getImageUrl: (imagePath?: string): string => {
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/storage/artikel/default.jpg';
+      return 'http://localhost:8000/storage/defaults/artikel-default.jpg';
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return '/storage/artikel/default.jpg';
+      return 'http://localhost:8000/storage/defaults/artikel-default.jpg';
     }
     
-    // If the path already starts with /storage, return as is (for storage files)
+    // If the path is just filename, construct full Laravel storage URL
+    if (!imagePath.startsWith('http') && !imagePath.startsWith('/storage')) {
+      return `http://localhost:8000/storage/admin/artikel/${imagePath}`;
+    }
+    
+    // If the path already starts with /storage, convert to full URL
     if (imagePath.startsWith('/storage')) {
-      return imagePath;
+      return `http://localhost:8000${imagePath}`;
     }
     
     // If the path already includes the domain, return as is
@@ -59,12 +64,10 @@ export const ArtikelService = {
     if (filename.includes('/')) {
       filename = filename.split('/').pop() || 'default.jpg';
     }
-    
-    // Return storage path for frontend assets
-    return `/storage/artikel/${filename}`;
-  },
 
-  getAllArtikels: async (): Promise<Artikel[]> => {
+    // Return full Laravel storage URL for artikel
+    return `http://localhost:8000/storage/admin/artikel/${filename}`;
+  },  getAllArtikels: async (): Promise<Artikel[]> => {
     try {
       const response = await fetch(`${API_URL}/artikels`, {
         headers: {
