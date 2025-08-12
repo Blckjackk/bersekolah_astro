@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
 // Fungsi untuk mendapatkan token dari localStorage
 const getToken = () => {

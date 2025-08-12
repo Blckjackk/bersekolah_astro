@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+// Environment-aware API URL
+const getApiUrl = () => {
+  if (import.meta.env.PROD) {
+    return 'https://web-production-0cc6.up.railway.app/api';
+  }
+  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+};
+
+const API_URL = getApiUrl();
 
 // Zod schema for Mentor data validation - Disesuaikan dengan API backend
 export const MentorSchema = z.object({
@@ -24,14 +32,29 @@ export const MentorService = {
   formatPhotoUrl: (mentor: any): Mentor => {
     if (!mentor) return mentor;
     
-    // If photo_url already exists from API, use it (API already provides correct URL)
-    if (mentor.photo_url) {
+    // If photo_url already exists from API and is a full URL, use it
+    if (mentor.photo_url && mentor.photo_url.startsWith('http')) {
       return mentor;
     }
     
-    // Only format if photo_url is missing but photo exists
-    if (!mentor.photo_url && mentor.photo) {
-      mentor.photo_url = `http://localhost:8000/storage/admin/mentor/${mentor.photo}`;
+    // Generate proper photo_url
+    const baseUrl = getApiUrl().replace('/api', '');
+    
+    // If no photo at all, use default
+    if (!mentor.photo && !mentor.photo_url) {
+      mentor.photo_url = `${baseUrl}/storage/defaults/mentor-default.jpg`;
+      return mentor;
+    }
+    
+    // If has photo but no proper photo_url, generate it
+    if (mentor.photo && (!mentor.photo_url || !mentor.photo_url.startsWith('http'))) {
+      // If photo already has /storage/ prefix
+      if (mentor.photo.startsWith('/storage/')) {
+        mentor.photo_url = `${baseUrl}${mentor.photo}`;
+      } else {
+        // If photo is just filename
+        mentor.photo_url = `${baseUrl}/storage/admin/mentor/${mentor.photo}`;
+      }
     }
     
     return mentor;

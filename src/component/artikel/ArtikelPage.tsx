@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { ArtikelService } from "../../lib/artikel-service";
 import {
   Card,
   Image
@@ -29,33 +30,6 @@ const ArtikelPage = () => {
   const [catHasMore, setCatHasMore] = useState(true);
   const [catLoading, setCatLoading] = useState(false);
   const [debug, setDebug] = useState<any>(null);
-
-  // Helper function to get correct image URL
-  const getImageUrl = (article: Article) => {
-    // Check for gambar_url first (if API provides full URL)
-    if (article.gambar_url) {
-      return article.gambar_url;
-    }
-    
-    // Check for gambar and handle all cases
-    if (article.gambar) {
-      // If it's a full URL already, return it directly
-      if (article.gambar.startsWith('http')) {
-        return article.gambar;
-      }
-      
-      // Check if it already has /storage/ prefix from API response
-      if (article.gambar.startsWith('/storage/')) {
-        return `http://localhost:8000${article.gambar}`;
-      }
-      
-      // Otherwise, construct Laravel storage path for admin/artikel folder
-      return `http://localhost:8000/storage/admin/artikel/${article.gambar}`;
-    }
-    
-    // Default fallback to Laravel storage defaults
-    return "http://localhost:8000/storage/defaults/artikel-default.jpg";
-  };
 
   // Fetch 6 artikel terbaru (tanpa filter)
   useEffect(() => {
@@ -146,7 +120,7 @@ const ArtikelPage = () => {
     if (latestArticles.length > 0) {
       console.log("Article image paths:");
       latestArticles.forEach(article => {
-        console.log(`- ${article.judul_halaman}: gambar=${article.gambar}, url=${getImageUrl(article)}`);
+        console.log(`- ${article.judul_halaman}: gambar=${article.gambar}, url=${ArtikelService.getImageUrl(article.gambar)}`);
       });
     }
   }, [latestArticles]);
@@ -196,7 +170,7 @@ const ArtikelPage = () => {
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
-                    src={getImageUrl(article)}
+                    src={ArtikelService.getImageUrl(article.gambar)}
                     alt={article.judul_halaman}
                     width={400}
                     height={225}
@@ -271,7 +245,7 @@ const ArtikelPage = () => {
               >
                 <div className="relative aspect-[16/9] overflow-hidden">
                   <Image
-                    src={getImageUrl(article)}
+                    src={ArtikelService.getImageUrl(article.gambar)}
                     alt={article.judul_halaman}
                     width={400}
                     height={225}

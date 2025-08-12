@@ -19,7 +19,11 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
 
   // Helper function to get correct image URL
   const getImageUrl = (article: Article | null) => {
-    if (!article) return "http://localhost:8000/storage/defaults/artikel-default.jpg";
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://web-production-0cc6.up.railway.app'
+      : 'http://localhost:8000';
+    
+    if (!article) return `${baseUrl}/storage/defaults/artikel-default.jpg`;
 
     // Check for gambar_url first (if API provides full URL)
     if (article.gambar_url) {
@@ -35,15 +39,15 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
 
       // Check if it already has /storage/ prefix from API response
       if (article.gambar.startsWith("/storage/")) {
-        return `http://localhost:8000${article.gambar}`;
+        return `${baseUrl}${article.gambar}`;
       }
 
       // Otherwise, construct Laravel storage path for admin/artikel folder
-      return `http://localhost:8000/storage/admin/artikel/${article.gambar}`;
+      return `${baseUrl}/storage/admin/artikel/${article.gambar}`;
     }
 
     // Default fallback to Laravel storage defaults
-    return "http://localhost:8000/storage/defaults/artikel-default.jpg";
+    return `${baseUrl}/storage/defaults/artikel-default.jpg`;
   };
 
   useEffect(() => {
@@ -52,7 +56,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
       return;
     }
 
-    fetch(`http://localhost:8000/api/konten/${articleId}`)
+    fetch(`${import.meta.env.PROD ? 'https://web-production-0cc6.up.railway.app' : 'http://localhost:8000'}/api/konten/${articleId}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("Article detail API response:", data);

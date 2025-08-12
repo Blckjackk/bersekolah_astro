@@ -11,7 +11,7 @@
 // Get the API URL from sources in order of preference:
 // 1. localStorage (if in browser)
 // 2. Default value - no longer using environment variables
-let baseURL = 'http://localhost:8000/api';
+let baseURL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
 // Check if we're in a browser environment
 if (typeof window !== 'undefined') {

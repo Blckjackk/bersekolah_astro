@@ -1,4 +1,12 @@
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+// Environment-aware API URL
+const getApiUrl = () => {
+  if (import.meta.env.PROD) {
+    return 'https://web-production-0cc6.up.railway.app/api';
+  }
+  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+};
+
+const API_URL = getApiUrl();
 
 export interface Artikel {
   id: number;
@@ -34,24 +42,28 @@ export interface UpdateArtikelRequest {
 export const ArtikelService = {
   // Helper function untuk mendapatkan URL gambar artikel
   getImageUrl: (imagePath?: string): string => {
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://web-production-0cc6.up.railway.app'
+      : 'http://localhost:8000';
+    
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return 'http://localhost:8000/storage/defaults/artikel-default.jpg';
+      return `${baseUrl}/storage/defaults/artikel-default.jpg`;
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return 'http://localhost:8000/storage/defaults/artikel-default.jpg';
+      return `${baseUrl}/storage/defaults/artikel-default.jpg`;
     }
     
     // If the path is just filename, construct full Laravel storage URL
     if (!imagePath.startsWith('http') && !imagePath.startsWith('/storage')) {
-      return `http://localhost:8000/storage/admin/artikel/${imagePath}`;
+      return `${baseUrl}/storage/admin/artikel/${imagePath}`;
     }
     
     // If the path already starts with /storage, convert to full URL
     if (imagePath.startsWith('/storage')) {
-      return `http://localhost:8000${imagePath}`;
+      return `${baseUrl}${imagePath}`;
     }
     
     // If the path already includes the domain, return as is
@@ -66,10 +78,10 @@ export const ArtikelService = {
     }
 
     // Return full Laravel storage URL for artikel
-    return `http://localhost:8000/storage/admin/artikel/${filename}`;
+    return `${baseUrl}/storage/admin/artikel/${filename}`;
   },  getAllArtikels: async (): Promise<Artikel[]> => {
     try {
-      const response = await fetch(`${API_URL}/artikels`, {
+      const response = await fetch(`${API_URL}/konten`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
@@ -90,7 +102,7 @@ export const ArtikelService = {
 
   getArtikelById: async (id: number): Promise<Artikel> => {
     try {
-      const response = await fetch(`${API_URL}/artikels/${id}`, {
+      const response = await fetch(`${API_URL}/konten/${id}`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('bersekolah_auth_token')}`
@@ -122,7 +134,7 @@ export const ArtikelService = {
         formData.append('gambar', artikel.gambar);
       }
 
-      const response = await fetch(`${API_URL}/artikels`, {
+      const response = await fetch(`${API_URL}/admin-konten`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -158,7 +170,7 @@ export const ArtikelService = {
         formData.append('gambar', artikel.gambar);
       }
 
-      const response = await fetch(`${API_URL}/artikels/${id}`, {
+      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -182,7 +194,7 @@ export const ArtikelService = {
 
   deleteArtikel: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`${API_URL}/artikels/${id}`, {
+      const response = await fetch(`${API_URL}/admin-konten/${id}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',
@@ -202,8 +214,8 @@ export const ArtikelService = {
 
   updateArtikelStatus: async (id: number, status: 'draft' | 'published' | 'archived'): Promise<Artikel> => {
     try {
-      const response = await fetch(`${API_URL}/artikels/${id}/status`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/admin-konten/${id}/status`, {
+        method: 'PATCH',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',

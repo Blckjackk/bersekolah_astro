@@ -512,12 +512,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                         {page.gambar ? (
                           <div className="overflow-hidden w-8 h-8 bg-gray-100 rounded">
                             <img 
-                              src={page.gambar || "/storage/artikel/default.jpg"}
+                              src={HalamanService.getImageUrl(page.gambar)}
                               alt={page.judul_halaman}
                               className="object-cover w-full h-full"
                               onError={(e) => {
                                 e.currentTarget.onerror = null;
-                                e.currentTarget.src = "/storage/artikel/default.jpg";
+                                e.currentTarget.src = HalamanService.getImageUrl();
                               }}
                             />
                           </div>
@@ -609,12 +609,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                     <div className="overflow-hidden relative w-16 h-16 bg-gray-100 rounded flex-shrink-0">
                       {page.gambar ? (
                         <img 
-                          src={page.gambar || "/storage/artikel/default.jpg"}
+                          src={HalamanService.getImageUrl(page.gambar)}
                           alt={page.judul_halaman}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/storage/artikel/default.jpg";
+                            e.currentTarget.src = HalamanService.getImageUrl();
                           }}
                         />
                       ) : (
@@ -907,12 +907,12 @@ export default function KelolaArtikelPage({ defaultCategory = "news" }: { defaul
                 <div className="mt-2">
                   <p className="mb-1 text-xs text-gray-500">Gambar Saat Ini:</p>
                   <img
-                    src={selectedPage.gambar || "/storage/artikel/default.jpg"}
+                    src={HalamanService.getImageUrl(selectedPage.gambar)}
                     alt={selectedPage.judul_halaman}
                     className="object-cover w-32 h-32 rounded border"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = "/storage/artikel/default.jpg";
+                      e.currentTarget.src = HalamanService.getImageUrl();
                     }}
                   />
                   <p className="mt-1 text-xs text-gray-500">

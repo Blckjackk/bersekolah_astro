@@ -232,9 +232,11 @@ export default function MentorPage() {
       // Siapkan data yang akan dikirim ke API
       const mentorData = {
         name: formData.name.trim(),
-        email: formData.email.trim(),
-        upload_to: 'assets/image/mentor' // Update ke direktori yang benar
+        email: formData.email.trim()
       };
+      
+      console.log('Frontend: Sending mentor data:', mentorData);
+      console.log('Frontend: Photo file:', photoFile);
       
       const result = await MentorService.createMentor(mentorData, photoFile);
       
@@ -244,7 +246,8 @@ export default function MentorPage() {
       await fetchMentors();
     } catch (err) {
       console.error("Error creating mentor:", err);
-      showToast("Gagal menambahkan mentor", "error");
+      const errorMessage = err instanceof Error ? err.message : "Gagal menambahkan mentor";
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }

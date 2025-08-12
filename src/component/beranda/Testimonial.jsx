@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardBody, Avatar, Button } from "@heroui/react"
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
+import { TestimoniService } from '../../lib/testimoni-service'
 
 const Testimonial = () => {
   const [testimonials, setTestimonials] = useState([])
@@ -14,21 +15,19 @@ const Testimonial = () => {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        console.log('Fetching testimonials from:', 'http://localhost:8000/api/testimoni');
-        const response = await fetch('http://localhost:8000/api/testimoni') // sesuaikan dengan API Laravel
-        
-        console.log('Testimoni API Response Status:', response.status);
+        // Environment-aware API URL
+        const apiUrl = import.meta.env.PROD 
+          ? 'https://web-production-0cc6.up.railway.app/api/testimoni'
+          : 'http://localhost:8000/api/testimoni';
+          
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`);
         }
         
         const data = await response.json()
-        console.log('Raw testimoni data from API:', data);
-        
         const arr = Array.isArray(data.data) ? data.data : [];
-        console.log('Testimoni array:', arr);
-        console.log('Active testimonials:', arr.filter(item => item.status === 'active'));
 
         // Filter dan map ke format frontend
         const filtered = arr.filter(item => item.status === 'active').map(item => ({
@@ -37,7 +36,7 @@ const Testimonial = () => {
           role: item.angkatan_beswan,
           company: item.sekarang_dimana,
           quote: item.isi_testimoni,
-          image: item.foto_testimoni_url || '/assets/image/defaults/testimoni-default.jpg'
+          image: TestimoniService.getImageUrl(item.foto_testimoni_url || item.foto_testimoni)
         }));
 
         console.log('Filtered testimonials:', filtered);
@@ -157,7 +156,7 @@ const Testimonial = () => {
                         src={currentTestimonial.image}
                         alt={currentTestimonial.name}
                         className="object-cover w-full h-96"
-                        onError={e => { e.target.src = '/assets/image/defaults/testimoni-default.jpg'; }}
+                        onError={e => { e.target.src = TestimoniService.getImageUrl('/assets/image/defaults/testimoni-default.jpg'); }}
                       />
                     </div>
 
@@ -204,7 +203,7 @@ const Testimonial = () => {
                           src={currentTestimonial.image}
                           alt={currentTestimonial.name}
                           className="w-12 h-12"
-                          onError={e => { e.target.src = '/assets/image/defaults/testimoni-default.jpg'; }}
+                          onError={e => { e.target.src = TestimoniService.getImageUrl('/assets/image/defaults/testimoni-default.jpg'); }}
                         />
                         <div>
                           <h4 className="text-lg font-bold text-gray-900">{currentTestimonial.name}</h4>

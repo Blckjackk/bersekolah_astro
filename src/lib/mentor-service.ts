@@ -13,35 +13,45 @@ export interface Mentor {
 export const MentorService = {
   // Helper function to get correct image URL
   getImageUrl: (imagePath?: string): string => {
+    const baseUrl = import.meta.env.PROD 
+      ? 'https://web-production-0cc6.up.railway.app'
+      : 'http://localhost:8000';
+    
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return '/assets/image/company-profile/default-mentor.jpg';
+      return `${baseUrl}/storage/defaults/mentor-default.jpg`;
     }
     
     // If it's already 'default.jpg', return the correct path
     if (imagePath === 'default.jpg') {
-      return '/assets/image/company-profile/default-mentor.jpg';
+      return `${baseUrl}/storage/defaults/mentor-default.jpg`;
     }
     
-    // If the path already starts with /storage, return as is (for storage files)
-    if (imagePath.startsWith('/storage')) {
-      return imagePath;
-    }
-    
-    // If the path already includes the domain, return as is
+    // If it's already a full URL, return as is
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
     
-    // Extract filename from any path structure (remove mentor/ prefix if exists)
-    let filename = imagePath.replace('mentor/', '');
-    if (filename.includes('/')) {
-      filename = filename.split('/').pop() || 'default.jpg';
+    // If it already starts with /storage, convert to full URL
+    if (imagePath.startsWith('/storage/')) {
+      return `${baseUrl}${imagePath}`;
     }
     
-    // Return storage path for frontend assets
-    return `/storage/mentor/${filename}`;
+    // If it's just filename, construct full Laravel storage URL
+    if (!imagePath.includes('/')) {
+      return `${baseUrl}/storage/admin/mentor/${imagePath}`;
+    }
+    
+    // Extract filename from any path structure
+    let filename = imagePath;
+    if (filename.includes('/')) {
+      filename = filename.split('/').pop() || 'mentor-default.jpg';
+    }
+
+    // Return full Laravel storage URL for mentor
+    return `${baseUrl}/storage/admin/mentor/${filename}`;
   },
+
   getAllMentors: async (): Promise<Mentor[]> => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token');
@@ -126,36 +136,46 @@ export const MentorService = {
   
   createMentor: async (mentorData: any, photoFile: File | null): Promise<Mentor> => {
     try {
-      const token = localStorage.getItem('bersekolah_auth_token');
-      if (!token) {
-        throw new Error('Unauthorized: No token found');
-      }
-      
       const formData = new FormData();
       // Add mentor data to form
       formData.append('name', mentorData.name);
       formData.append('email', mentorData.email);
       
+      console.log('Creating mentor with data:', {
+        name: mentorData.name,
+        email: mentorData.email,
+        hasPhoto: !!photoFile
+      });
+      
       // Add photo if provided
       if (photoFile) {
         formData.append('photo', photoFile);
+        console.log('Photo file details:', {
+          name: photoFile.name,
+          size: photoFile.size,
+          type: photoFile.type
+        });
       }
       
       const response = await fetch(`${API_URL}/mentors`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
+          // Hapus Authorization header sementara karena route tidak protected
         },
         body: formData
       });
       
+      console.log('API Response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API Error details:', errorData);
         throw new Error(errorData.message || `Failed to create mentor: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('API Success response:', data);
       return data;
     } catch (error) {
       console.error('Error in createMentor:', error);
@@ -165,11 +185,6 @@ export const MentorService = {
   
   updateMentor: async (id: number, mentorData: any, photoFile: File | null): Promise<Mentor> => {
     try {
-      const token = localStorage.getItem('bersekolah_auth_token');
-      if (!token) {
-        throw new Error('Unauthorized: No token found');
-      }
-      
       const formData = new FormData();
       // Add mentor data to form
       formData.append('name', mentorData.name);
@@ -184,8 +199,8 @@ export const MentorService = {
       const response = await fetch(`${API_URL}/mentors/${id}`, {
         method: 'POST', // Using POST with _method for Laravel method spoofing
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
+          // Hapus Authorization header sementara karena route tidak protected
         },
         body: formData
       });
