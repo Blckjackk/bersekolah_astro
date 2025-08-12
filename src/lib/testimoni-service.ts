@@ -1,12 +1,6 @@
-// Environment-aware API URL
-const getApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return 'https://web-production-0cc6.up.railway.app/api';
-  }
-  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
-};
+import { getEnvironmentUrls, getTestimoniImageUrl } from './utils/url-helper';
 
-const API_URL = getApiUrl();
+const { apiUrl: API_URL } = getEnvironmentUrls();
 
 // Interface untuk Testimoni
 export interface Testimoni {
@@ -24,43 +18,7 @@ export interface Testimoni {
 export const TestimoniService = {
   // Helper function untuk mendapatkan URL gambar testimoni
   getImageUrl: (imagePath?: string): string => {
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://web-production-0cc6.up.railway.app'
-      : 'http://localhost:8000';
-    
-    // If no image path provided, return default
-    if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return `${baseUrl}/storage/defaults/testimoni-default.jpg`;
-    }
-    
-    // If it's already 'default.jpg', return the correct path
-    if (imagePath === 'default.jpg') {
-      return `${baseUrl}/storage/defaults/testimoni-default.jpg`;
-    }
-    
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // If it already starts with /storage, convert to full URL
-    if (imagePath.startsWith('/storage/')) {
-      return `${baseUrl}${imagePath}`;
-    }
-    
-    // If it's just filename, construct full Laravel storage URL
-    if (!imagePath.includes('/')) {
-      return `${baseUrl}/storage/admin/testimoni/${imagePath}`;
-    }
-    
-    // Extract filename from any path structure
-    let filename = imagePath;
-    if (filename.includes('/')) {
-      filename = filename.split('/').pop() || 'testimoni-default.jpg';
-    }
-
-    // Return full Laravel storage URL for testimoni
-    return `${baseUrl}/storage/admin/testimoni/${filename}`;
+    return getTestimoniImageUrl(imagePath);
   },
 
   getAllTestimoni: async (): Promise<Testimoni[]> => {

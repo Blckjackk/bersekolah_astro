@@ -5,8 +5,13 @@ const DebugAPI = () => {
   const [testimoniData, setTestimoniData] = useState(null);
 
   useEffect(() => {
+    // Environment-aware API URL
+    const API_URL = import.meta.env.PROD 
+      ? 'https://web-production-0cc6.up.railway.app/api'
+      : import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
     // Test Mentor API
-    fetch('http://localhost:8000/api/mentors')
+    fetch(`${API_URL}/mentors`)
       .then(res => res.json())
       .then(data => {
         console.log('==== MENTOR API RESPONSE ====');
@@ -22,7 +27,7 @@ const DebugAPI = () => {
       .catch(err => console.error('Mentor API Error:', err));
 
     // Test Testimoni API  
-    fetch('http://localhost:8000/api/testimoni')
+    fetch(`${API_URL}/testimoni`)
       .then(res => res.json())
       .then(data => {
         console.log('==== TESTIMONI API RESPONSE ====');

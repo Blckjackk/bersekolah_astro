@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+import { getEnvironmentUrls, getMentorImageUrl } from './utils/url-helper';
+
+const { apiUrl: API_URL } = getEnvironmentUrls();
 
 export interface Mentor {
   id: number;
@@ -13,43 +15,7 @@ export interface Mentor {
 export const MentorService = {
   // Helper function to get correct image URL
   getImageUrl: (imagePath?: string): string => {
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://web-production-0cc6.up.railway.app'
-      : 'http://localhost:8000';
-    
-    // If no image path provided, return default
-    if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return `${baseUrl}/storage/defaults/mentor-default.jpg`;
-    }
-    
-    // If it's already 'default.jpg', return the correct path
-    if (imagePath === 'default.jpg') {
-      return `${baseUrl}/storage/defaults/mentor-default.jpg`;
-    }
-    
-    // If it's already a full URL, return as is
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // If it already starts with /storage, convert to full URL
-    if (imagePath.startsWith('/storage/')) {
-      return `${baseUrl}${imagePath}`;
-    }
-    
-    // If it's just filename, construct full Laravel storage URL
-    if (!imagePath.includes('/')) {
-      return `${baseUrl}/storage/admin/mentor/${imagePath}`;
-    }
-    
-    // Extract filename from any path structure
-    let filename = imagePath;
-    if (filename.includes('/')) {
-      filename = filename.split('/').pop() || 'mentor-default.jpg';
-    }
-
-    // Return full Laravel storage URL for mentor
-    return `${baseUrl}/storage/admin/mentor/${filename}`;
+    return getMentorImageUrl(imagePath);
   },
 
   getAllMentors: async (): Promise<Mentor[]> => {

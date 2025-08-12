@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { getEnvironmentUrls, getDocumentUrl } from './utils/url-helper';
 
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const { apiUrl: API_URL } = getEnvironmentUrls();
 
 // Fungsi untuk mendapatkan token dari localStorage
 const getToken = () => {
@@ -32,6 +33,11 @@ export interface UploadedDocument {
 }
 
 export const BerkasService = {
+  // Helper function untuk mendapatkan URL dokumen
+  getDocumentUrl: (filePath?: string, documentType?: string): string => {
+    return getDocumentUrl(filePath, documentType);
+  },
+
   // Mendapatkan daftar dokumen wajib
   getRequiredDocuments: async (): Promise<RequiredDocument[]> => {
     try {

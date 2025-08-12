@@ -1,12 +1,6 @@
-// Environment-aware API URL
-const getApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return 'https://web-production-0cc6.up.railway.app/api';
-  }
-  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
-};
+import { getEnvironmentUrls, getArtikelImageUrl } from './utils/url-helper';
 
-const API_URL = getApiUrl();
+const { apiUrl: API_URL } = getEnvironmentUrls();
 
 export interface Artikel {
   id: number;
@@ -42,43 +36,7 @@ export interface UpdateArtikelRequest {
 export const ArtikelService = {
   // Helper function untuk mendapatkan URL gambar artikel
   getImageUrl: (imagePath?: string): string => {
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://web-production-0cc6.up.railway.app'
-      : 'http://localhost:8000';
-    
-    // If no image path provided, return default
-    if (!imagePath || imagePath === 'null' || imagePath === '') {
-      return `${baseUrl}/storage/defaults/artikel-default.jpg`;
-    }
-    
-    // If it's already 'default.jpg', return the correct path
-    if (imagePath === 'default.jpg') {
-      return `${baseUrl}/storage/defaults/artikel-default.jpg`;
-    }
-    
-    // If the path is just filename, construct full Laravel storage URL
-    if (!imagePath.startsWith('http') && !imagePath.startsWith('/storage')) {
-      return `${baseUrl}/storage/admin/artikel/${imagePath}`;
-    }
-    
-    // If the path already starts with /storage, convert to full URL
-    if (imagePath.startsWith('/storage')) {
-      return `${baseUrl}${imagePath}`;
-    }
-    
-    // If the path already includes the domain, return as is
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    
-    // Extract filename from any path structure
-    let filename = imagePath;
-    if (filename.includes('/')) {
-      filename = filename.split('/').pop() || 'default.jpg';
-    }
-
-    // Return full Laravel storage URL for artikel
-    return `${baseUrl}/storage/admin/artikel/${filename}`;
+    return getArtikelImageUrl(imagePath);
   },  getAllArtikels: async (): Promise<Artikel[]> => {
     try {
       const response = await fetch(`${API_URL}/konten`, {

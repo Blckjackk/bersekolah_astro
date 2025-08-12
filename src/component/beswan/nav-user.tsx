@@ -99,7 +99,11 @@ export function NavUser() {
         return;
       }
 
-      const baseURL = import.meta.env.PUBLIC_API_BASE_URL;
+      // Environment-aware API URL
+      const baseURL = import.meta.env.PROD 
+        ? 'https://web-production-0cc6.up.railway.app/api'
+        : import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+      
       console.log('Fetching user data from:', `${baseURL}/me`);
       
       const response = await fetch(`${baseURL}/me`, {
