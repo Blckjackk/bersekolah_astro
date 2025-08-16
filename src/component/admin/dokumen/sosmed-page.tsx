@@ -674,9 +674,9 @@ export default function AdminDokumenSosmedPage() {
             {selectedDoc && (
               <div className="flex justify-center items-center w-full h-full bg-gray-50">
                 <img 
-                  src={selectedDoc.file_path} 
-                  alt="Social Media Screenshot" 
-                  className="object-contain max-w-full max-h-full"
+                  src={getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type)} 
+                  alt="Document Preview" 
+                  className="object-contain max-w-full max-h-full p-2"
                   onError={(e) => {
                     console.error('Image failed to load:', selectedDoc.file_path);
                     e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';

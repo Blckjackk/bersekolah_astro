@@ -49,6 +49,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 // Media Sosial interface
 interface MediaSosial {
@@ -1358,35 +1359,13 @@ export default function DokumenPendukungPage() {
                     <div className="w-full h-full overflow-auto bg-white">
                       <div className="flex items-center justify-center min-h-full p-4">
                         <img 
-                          src={previewDoc.file_path} 
+                          src={getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)} 
                           alt="Document Preview" 
-                          className="object-contain max-w-none max-h-none cursor-zoom-in"
-                          style={{
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            minWidth: 'auto',
-                            minHeight: 'auto'
-                          }}
-                          onLoad={() => console.log('Image loaded successfully')}
+                          className="object-contain max-w-full max-h-full p-2"
                           onError={(e) => {
-                            console.error('Image failed to load:', e)
-                            const target = e.target as HTMLImageElement
-                            target.style.display = 'none'
-                            const fallback = document.createElement('div')
-                            fallback.className = 'flex flex-col items-center justify-center w-full h-full p-8 text-center bg-gray-50'
-                            fallback.innerHTML = `
-                              <svg class="w-16 h-16 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <h3 class="text-lg font-medium text-gray-900 mb-2">Gambar tidak dapat ditampilkan</h3>
-                              <p class="text-gray-500 mb-4">File gambar tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat gambar.</p>
-                            `
-                            target.parentNode?.appendChild(fallback)
-                          }}
-                          onClick={() => {
-                            // Open in new tab for full size view
-                            const cleanUrl = previewDoc.file_path.split('?')[0]
-                            window.open(cleanUrl, '_blank')
+                            console.error('Image failed to load:', previewDoc.file_path);
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
+                            e.currentTarget.classList.add('w-24', 'h-24');
                           }}
                         />
                       </div>

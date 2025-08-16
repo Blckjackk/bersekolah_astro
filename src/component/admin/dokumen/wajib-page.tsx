@@ -235,31 +235,13 @@ export default function AdminDokumenWajibPage() {
     }
   }
   const handlePreview = (doc: Document) => {
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
+    // Use getDocumentUrl helper to get the correct URL based on environment
+    const documentUrl = getDocumentUrl(doc.file_path, doc.document_type);
     
-    let directFileUrl = doc.file_path;
+    // Add cache busting parameter
+    const cacheBustingUrl = `${documentUrl}${documentUrl.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
     
-    if (directFileUrl.startsWith('http')) {
-      // URL sudah lengkap, tapi perlu validasi domain
-      const url = new URL(directFileUrl);
-      if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
-        directFileUrl = directFileUrl.replace(url.origin, baseUrl);
-      }
-    } else {
-      // Jalur relatif, perlu ditambahkan baseUrl
-      if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`;
-      } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`;
-      } else {
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
-      }
-    }
-    
-    // Tambahkan parameter untuk menghindari cache jika diperlukan
-    directFileUrl = `${directFileUrl}?t=${new Date().getTime()}`;
-    
-    console.log('Preview URL:', directFileUrl);
+    console.log('Preview URL:', cacheBustingUrl);
     
     // Tentukan jenis file berdasarkan ekstensi
     const fileExtension = doc.file_name.split('.').pop()?.toLowerCase() || '';
@@ -267,7 +249,7 @@ export default function AdminDokumenWajibPage() {
     
     setSelectedDoc({
       ...doc,
-      file_path: directFileUrl,
+      file_path: cacheBustingUrl,
       fileType: fileType // Simpan jenis file untuk digunakan di preview
     });
     setPreviewDialog(true);
@@ -720,7 +702,7 @@ export default function AdminDokumenWajibPage() {
                           <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
                         </div>
                         <Button 
-                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                           variant="outline"
                           size="sm"
                         >
@@ -730,7 +712,7 @@ export default function AdminDokumenWajibPage() {
                       </div>
                       <div className="flex-1 bg-gray-50 min-h-[400px]">
                         <iframe 
-                          src={`${selectedDoc.file_path}#toolbar=0&navpanes=0`}
+                          src={`${getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type)}#toolbar=0&navpanes=0`}
                           className="w-full h-full border-0" 
                           title="PDF Preview"
                           sandbox="allow-scripts allow-same-origin allow-forms"
@@ -784,7 +766,7 @@ export default function AdminDokumenWajibPage() {
                           <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
                         </div>
                         <Button 
-                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                           variant="outline"
                           size="sm"
                         >
