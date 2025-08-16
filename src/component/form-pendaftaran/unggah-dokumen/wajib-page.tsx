@@ -19,6 +19,7 @@ import {
   ExternalLink
 } from "lucide-react"
 import { DocumentStats } from "./document-stats"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -581,87 +582,22 @@ export default function DokumenWajibPage() {
   }
 
   const handlePreview = (uploadedDoc: UploadedDocument) => {
-    // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
+    // Use getDocumentUrl helper to get the correct URL based on environment
+    const documentUrl = getDocumentUrl(uploadedDoc.file_path, uploadedDoc.document_type_code || uploadedDoc.document_type);
     
-    let directFileUrl = uploadedDoc.file_path;
-    
-    // Log untuk debug
     console.log('=== PREVIEW DEBUG INFO ===');
     console.log('Original file path:', uploadedDoc.file_path);
-    console.log('Document file type:', uploadedDoc.file_type);
-    console.log('Base URL:', baseUrl);
+    console.log('Document type:', uploadedDoc.document_type_code || uploadedDoc.document_type);
+    console.log('Generated URL:', documentUrl);
     
-    // Jika file_path adalah URL lengkap, gunakan apa adanya
-    if (directFileUrl.startsWith('http')) {
-      // URL sudah lengkap, tapi mungkin salah port/host
-      try {
-        const url = new URL(directFileUrl);
-        console.log('Parsed URL host:', url.host);
-        
-        // Check if URL needs to be modified
-        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
-          directFileUrl = directFileUrl.replace(url.origin, baseUrl);
-          console.log('URL host replaced, new URL:', directFileUrl);
-        }
-      } catch (e) {
-        console.error('Error parsing URL:', e);
-        // Fallback - treat as relative path
-        if (directFileUrl.startsWith('/storage/')) {
-          directFileUrl = `${baseUrl}${directFileUrl}`;
-        } else if (directFileUrl.startsWith('storage/')) {
-          directFileUrl = `${baseUrl}/${directFileUrl}`;
-        } else {
-          directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
-        }
-        console.log('Fallback path constructed:', directFileUrl);
-      }
-    } else {
-      // Jika relatif path, gabungkan dengan base URL
-      if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`;
-      } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`;
-      } else if (directFileUrl.startsWith('/')) {
-        // Path starts with slash but not with /storage
-        directFileUrl = `${baseUrl}${directFileUrl}`;
-      } else {
-        // Path tanpa /storage prefix dan tanpa slash awal
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
-      }
-      console.log('Relative path converted to:', directFileUrl);
-    }
-    
-    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
-    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1');
-    
-    // Test URL with fetch
-    console.log('Testing URL accessibility with HEAD request...');
-    fetch(directFileUrl, { method: 'HEAD' })
-      .then(response => {
-        console.log('URL test response:', response.status, response.statusText);
-        if (!response.ok) {
-          console.warn('URL might not be accessible:', directFileUrl);
-        } else {
-          console.log('URL is accessible:', directFileUrl);
-        }
-      })
-      .catch(error => {
-        console.error('Error testing URL:', error);
-      });
+    // Add cache busting parameter
+    const cacheBustingUrl = `${documentUrl}${documentUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
+    console.log('URL with cache buster:', cacheBustingUrl);
     
     const docWithCorrectedPath = {
       ...uploadedDoc,
-      file_path: directFileUrl
+      file_path: cacheBustingUrl
     };
-      console.log('Final document for preview:', docWithCorrectedPath);
-    
-    // Add cache busting parameter
-    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
-    console.log('URL with cache buster:', cacheBustingUrl);
-    
-    // Update document with cache-busted URL
-    docWithCorrectedPath.file_path = cacheBustingUrl;
     
     setPreviewDoc(docWithCorrectedPath);
     setPreviewDialog(true);
@@ -1262,7 +1198,7 @@ export default function DokumenWajibPage() {
               isFilePDF(previewDoc.file_name, previewDoc.file_type) ? (
                 <div className="relative w-full h-[65vh]">
                   <iframe
-                    src={previewDoc.file_path}
+                    src={`${getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)}#toolbar=0&navpanes=0`}
                     className="w-full h-full border-0 rounded-lg"
                     title={`Preview ${previewDoc.file_name}`}
                     onLoad={() => console.log('PDF iframe loaded successfully')}
@@ -1289,31 +1225,19 @@ export default function DokumenWajibPage() {
               ) : isFileImage(previewDoc.file_name, previewDoc.file_type) ? (
                 <div className="flex items-center justify-center min-h-[65vh] p-4">
                   <img 
-                    src={previewDoc.file_path} 
+                    src={getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)} 
                     alt={`Preview ${previewDoc.file_name}`} 
                     className="object-contain max-w-full max-h-[65vh] rounded-lg shadow-sm cursor-zoom-in"
                     onLoad={() => console.log('Image loaded successfully')}
                     onError={(e) => {
-                      console.error('Image failed to load:', e)
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                      const parent = target.parentElement
-                      if (parent) {
-                        const fallback = document.createElement('div')
-                        fallback.className = 'flex flex-col items-center justify-center p-8 text-center'
-                        fallback.innerHTML = `
-                          <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <h3 class="text-lg font-medium text-gray-900 mb-2">Gambar tidak dapat ditampilkan</h3>
-                          <p class="text-gray-500 mb-4">File gambar tidak dapat ditampilkan dalam preview. Silakan buka di tab baru untuk melihat gambar.</p>
-                        `
-                        parent.appendChild(fallback)
-                      }
+                      console.error('Image failed to load:', previewDoc.file_path);
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMjJDNi40NzcgMjIgMiAxNy41MjMgMiAxMkMyIDYuNDc3IDYuNDc3IDIgMTIgMkMxNy41MjMgMiAyMiA2LjQ3NyAyMiAxMkMyMiAxNy41MjMgMTcuNTIzIDIyIDEyIDIyWk0xMiAyMEMxNi40MTggMjAgMjAgMTYuNDE4IDIwIDEyQzIwIDcuNTgyIDE2LjQxOCA0IDEyIDRDNy41ODIgNCA0IDcuNTgyIDQgMTJDNCAxNi40MTggNy41ODIgMjAgMTIgMjBaTTExIDd2MkgxM1Y3SDExWk0xMSAxN0gxM1YxMUgxMVYxN1oiIGZpbGw9IiNmZjAwMDAiLz48L3N2Zz4=';
+                      e.currentTarget.classList.add('w-24', 'h-24');
                     }}
                     onClick={() => {
                       // Open in new tab for full size view
-                      const cleanUrl = previewDoc.file_path.split('?')[0]
+                      const documentUrl = getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)
+                      const cleanUrl = documentUrl.split('?')[0]
                       window.open(cleanUrl, '_blank')
                     }}
                   />
@@ -1345,7 +1269,8 @@ export default function DokumenWajibPage() {
               onClick={() => {
                 if (previewDoc?.file_path) {
                   // Remove cache buster for cleaner URL when opening in new tab
-                  const cleanUrl = previewDoc.file_path.split('?')[0]
+                  const documentUrl = getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)
+                  const cleanUrl = documentUrl.split('?')[0]
                   window.open(cleanUrl, '_blank')
                 }
               }}

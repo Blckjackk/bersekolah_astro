@@ -889,7 +889,7 @@ export default function DokumenSosmedPage() {
                 {(previewDoc.file_name?.toLowerCase().endsWith('.pdf') || previewDoc.file_type === 'pdf') ? (
                   <div className="relative w-full h-full">
                     <iframe
-                      src={previewDoc.file_path}
+                      src={`${getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)}#toolbar=0&navpanes=0`}
                       className="w-full h-full border-0 rounded-lg"
                       title={`Preview ${previewDoc.file_name}`}
                       onLoad={() => console.log('PDF iframe loaded successfully')}
@@ -918,7 +918,7 @@ export default function DokumenSosmedPage() {
                   <div className="w-full h-full overflow-auto bg-white">
                     <div className="flex items-center justify-center min-h-full p-4">
                       <img 
-                        src={previewDoc.file_path} 
+                        src={getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)} 
                         alt="Document Preview" 
                         className="object-contain max-w-none max-h-none cursor-zoom-in"
                         style={{
@@ -955,7 +955,8 @@ export default function DokumenSosmedPage() {
                         }}
                         onClick={(e) => {
                           // Open in new tab for full size view
-                          const cleanUrl = previewDoc.file_path.split('?')[0]
+                          const documentUrl = getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)
+                          const cleanUrl = documentUrl.split('?')[0]
                           window.open(cleanUrl, '_blank')
                         }}
                       />

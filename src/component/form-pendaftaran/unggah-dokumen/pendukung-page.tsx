@@ -49,7 +49,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
-import { getDocumentUrl } from "@/lib/utils/url-helper"
+import { getDocumentUrl, getEnvironmentUrls } from "@/lib/utils/url-helper"
 
 // Media Sosial interface
 interface MediaSosial {
@@ -202,8 +202,8 @@ export default function DokumenPendukungPage() {
   const fetchMediaSosial = async () => {
     setIsLoadingMediaSosial(true)
     try {
-      const baseURL = import.meta.env.PUBLIC_API_BASE_URL
-      const response = await fetch(`${baseURL}/media-sosial/latest`, {
+      const { apiUrl } = getEnvironmentUrls()
+      const response = await fetch(`${apiUrl}/media-sosial/latest`, {
         headers: {
           'Accept': 'application/json',
         }
@@ -255,8 +255,9 @@ export default function DokumenPendukungPage() {
         throw new Error('Token autentikasi tidak ditemukan')
       }
 
-      console.log('Fetching document types from:', `${import.meta.env.PUBLIC_API_BASE_URL}/document-types?category=pendukung`)
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/document-types?category=pendukung`, {
+      const { apiUrl } = getEnvironmentUrls()
+      console.log('Fetching document types from:', `${apiUrl}/document-types?category=pendukung`)
+      const response = await fetch(`${apiUrl}/document-types?category=pendukung`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -359,7 +360,8 @@ export default function DokumenPendukungPage() {
       const cacheBuster = new Date().getTime()
       console.log(`Fetching pendukung documents with cache buster: ${cacheBuster}`)
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/my-documents?category=pendukung&nocache=${cacheBuster}`, {
+      const { apiUrl } = getEnvironmentUrls()
+      const response = await fetch(`${apiUrl}/my-documents?category=pendukung&nocache=${cacheBuster}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -590,7 +592,8 @@ export default function DokumenPendukungPage() {
         }
         
         // For pendukung documents, use the correct API pattern
-        const uploadUrl = `${import.meta.env.PUBLIC_API_BASE_URL}/upload-document/${selectedDocType}`
+        const { apiUrl } = getEnvironmentUrls()
+      const uploadUrl = `${apiUrl}/upload-document/${selectedDocType}`
         
         console.log(`Uploading file ${index + 1}/${filesToUpload.length}:`, file.name, 'to:', uploadUrl)
 
@@ -660,7 +663,8 @@ export default function DokumenPendukungPage() {
       const token = localStorage.getItem('bersekolah_auth_token')
       if (!token) throw new Error('No authentication token')
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/documents/${documentId}`, {
+      const { apiUrl } = getEnvironmentUrls()
+      const response = await fetch(`${apiUrl}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -693,7 +697,7 @@ export default function DokumenPendukungPage() {
 
   const handlePreview = (uploadedDoc: UploadedDocument) => {
     // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
+    const { baseUrl } = getEnvironmentUrls();
     
     let directFileUrl = uploadedDoc.file_path;
     
@@ -1331,7 +1335,7 @@ export default function DokumenPendukungPage() {
                   {isFilePDF(previewDoc.file_name, previewDoc.file_type) ? (
                     <div className="relative w-full h-full">
                       <iframe
-                        src={previewDoc.file_path}
+                        src={`${getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type)}#toolbar=0&navpanes=0`}
                         className="w-full h-full border-0 rounded-lg"
                         title={`Preview ${previewDoc.file_name}`}
                         onLoad={() => console.log('PDF iframe loaded successfully')}
