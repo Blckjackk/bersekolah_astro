@@ -836,7 +836,7 @@ export default function AdminDokumenWajibPage() {
                         Silakan download untuk melihat konten file.
                       </p>
                       <Button 
-                        onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                        onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Download className="w-5 h-5 mr-2" />
