@@ -18,6 +18,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import { MediaLinksManager } from "@/component/admin/media-links-manager"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -692,7 +693,7 @@ export default function AdminDokumenSosmedPage() {
             </Button>
             {selectedDoc && (
               <Button 
-                onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Download className="mr-1 w-4 h-4" />

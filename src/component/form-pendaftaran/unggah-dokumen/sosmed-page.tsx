@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { validateFile as utilValidateFile, formatFileSize as utilFormatFileSize } from "@/utils/file-validation"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 import { 
   FileUp, 
   AlertCircle, 
@@ -427,87 +428,22 @@ export default function DokumenSosmedPage() {
     }
   }
   const handlePreview = (uploadedDoc: UploadedDocument) => {
-    // Convert API file path to direct storage URL
-    const baseUrl = import.meta.env.PUBLIC_API_BASE_URL_NO_API || 'http://localhost:8000';
+    // Use getDocumentUrl helper to get the correct URL based on environment
+    const documentUrl = getDocumentUrl(uploadedDoc.file_path, uploadedDoc.document_type_code || uploadedDoc.document_type);
     
-    let directFileUrl = uploadedDoc.file_path;
-    
-    // Log untuk debug
     console.log('=== PREVIEW DEBUG INFO ===');
     console.log('Original file path:', uploadedDoc.file_path);
-    console.log('Document file type:', uploadedDoc.file_type);
-    console.log('Base URL:', baseUrl);
+    console.log('Document type:', uploadedDoc.document_type_code || uploadedDoc.document_type);
+    console.log('Generated URL:', documentUrl);
     
-    // Jika file_path adalah URL lengkap, gunakan apa adanya
-    if (directFileUrl.startsWith('http')) {
-      // URL sudah lengkap, tapi mungkin salah port/host
-      try {
-        const url = new URL(directFileUrl);
-        console.log('Parsed URL host:', url.host);
-        
-        // Check if URL needs to be modified
-        if (url.host !== '127.0.0.1:8000' && !url.host.includes(baseUrl.replace('http://', '').replace('https://', ''))) {
-          directFileUrl = directFileUrl.replace(url.origin, baseUrl);
-          console.log('URL host replaced, new URL:', directFileUrl);
-        }
-      } catch (e) {
-        console.error('Error parsing URL:', e);
-        // Fallback - treat as relative path
-        if (directFileUrl.startsWith('/storage/')) {
-          directFileUrl = `${baseUrl}${directFileUrl}`;
-        } else if (directFileUrl.startsWith('storage/')) {
-          directFileUrl = `${baseUrl}/${directFileUrl}`;
-        } else {
-          directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
-        }
-        console.log('Fallback path constructed:', directFileUrl);
-      }
-    } else {
-      // Jika relatif path, gabungkan dengan base URL
-      if (directFileUrl.startsWith('/storage/')) {
-        directFileUrl = `${baseUrl}${directFileUrl}`;
-      } else if (directFileUrl.startsWith('storage/')) {
-        directFileUrl = `${baseUrl}/${directFileUrl}`;
-      } else if (directFileUrl.startsWith('/')) {
-        // Path starts with slash but not with /storage
-        directFileUrl = `${baseUrl}${directFileUrl}`;
-      } else {
-        // Path tanpa /storage prefix dan tanpa slash awal
-        directFileUrl = `${baseUrl}/storage/${directFileUrl}`;
-      }
-      console.log('Relative path converted to:', directFileUrl);
-    }
-    
-    // Ensure URL is fully qualified and remove any double slashes (except after protocol)
-    directFileUrl = directFileUrl.replace(/([^:]\/)\/+/g, '$1');
-    
-    // Test URL with fetch
-    console.log('Testing URL accessibility with HEAD request...');
-    fetch(directFileUrl, { method: 'HEAD' })
-      .then(response => {
-        console.log('URL test response:', response.status, response.statusText);
-        if (!response.ok) {
-          console.warn('URL might not be accessible:', directFileUrl);
-        } else {
-          console.log('URL is accessible:', directFileUrl);
-        }
-      })
-      .catch(error => {
-        console.error('Error testing URL:', error);
-      });
+    // Add cache busting parameter
+    const cacheBustingUrl = `${documentUrl}${documentUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
+    console.log('URL with cache buster:', cacheBustingUrl);
     
     const docWithCorrectedPath = {
       ...uploadedDoc,
-      file_path: directFileUrl
+      file_path: cacheBustingUrl
     };
-    console.log('Final document for preview:', docWithCorrectedPath);
-    
-    // Add cache busting parameter
-    const cacheBustingUrl = `${directFileUrl}${directFileUrl.includes('?') ? '&' : '?'}cacheBuster=${Date.now()}`;
-    console.log('URL with cache buster:', cacheBustingUrl);
-    
-    // Update document with cache-busted URL
-    docWithCorrectedPath.file_path = cacheBustingUrl;
     
     setPreviewDoc(docWithCorrectedPath);
     setPreviewDialog(true);
@@ -1099,7 +1035,7 @@ export default function DokumenSosmedPage() {
                   variant="default"
                   className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                   size="sm"
-                  onClick={() => window.open(previewDoc.file_path, '_blank')}
+                  onClick={() => window.open(getDocumentUrl(previewDoc.file_path, previewDoc.document_type_code || previewDoc.document_type), '_blank')}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Unduh File

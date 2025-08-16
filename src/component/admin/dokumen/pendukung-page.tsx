@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 interface Document {
   id: number;
@@ -741,7 +742,7 @@ export default function AdminDokumenPendukungPage() {
             </Button>
             {selectedDoc && (
               <Button 
-                onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Download className="mr-1 w-4 h-4" />

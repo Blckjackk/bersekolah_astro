@@ -16,6 +16,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import { DocumentStats } from "./document-stats"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -750,7 +751,7 @@ export default function AdminDokumenWajibPage() {
                           <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
                         </div>
                         <Button 
-                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                           variant="outline"
                           size="sm"
                         >
@@ -760,7 +761,7 @@ export default function AdminDokumenWajibPage() {
                       </div>
                       <div className="flex justify-center items-center flex-1 bg-gray-50 min-h-[400px]">
                         <img 
-                          src={selectedDoc.file_path} 
+                          src={getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type)} 
                           alt="Document Preview" 
                           className="object-contain max-w-full max-h-full p-2"
                           onError={(e) => {
@@ -799,7 +800,7 @@ export default function AdminDokumenWajibPage() {
                           Silakan download atau buka di tab baru.
                         </p>
                         <Button 
-                          onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                          onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
                           <Download className="w-5 h-5 mr-2" />
@@ -819,7 +820,7 @@ export default function AdminDokumenWajibPage() {
                         <span className="font-medium truncate max-w-[20rem]">{selectedDoc.file_name}</span>
                       </div>
                       <Button 
-                        onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                        onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                         variant="outline"
                         size="sm"
                       >
@@ -854,7 +855,7 @@ export default function AdminDokumenWajibPage() {
             </Button>
             {selectedDoc && (
               <Button 
-                onClick={() => window.open(selectedDoc.file_path, '_blank')}
+                onClick={() => window.open(getDocumentUrl(selectedDoc.file_path, selectedDoc.document_type), '_blank')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Download className="w-4 h-4 mr-1" />

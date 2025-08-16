@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { getDocumentUrl } from "@/lib/utils/url-helper"
 
 // ✅ Tambahkan toast hook yang benar
 const useToast = () => {
@@ -608,7 +609,8 @@ export default function UploadWajibPage() {
             {selectedDocument && (
               <Button 
                 onClick={() => {
-                  window.open(`${import.meta.env.PUBLIC_API_BASE_URL}/storage/${selectedDocument.file_path}`, '_blank')
+                  const documentUrl = getDocumentUrl(selectedDocument.file_path, selectedDocument.document_type?.code || '')
+                  window.open(documentUrl, '_blank')
                 }}
               >
                 <Download className="w-4 h-4 mr-2" />
