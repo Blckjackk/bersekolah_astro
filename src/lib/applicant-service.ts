@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { z } from 'zod';
 
 // Base URL dari environment atau fallback ke localhost
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_URL = 'https://sandybrown-capybara-903436.hostingersite.com/api';
 
 // Fungsi untuk mendapatkan token dari localStorage
 const getToken = () => localStorage.getItem('bersekolah_auth_token');

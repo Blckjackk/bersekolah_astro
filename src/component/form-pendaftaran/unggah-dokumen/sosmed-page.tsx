@@ -114,179 +114,166 @@ export default function DokumenSosmedPage() {
   // New state for social media links
   const [socialLinks, setSocialLinks] = useState<MediaSosialLinks>(defaultLinks)
   const [fetchingSocialLinks, setFetchingSocialLinks] = useState(false)
+  const [isLoadingMediaSosial, setIsLoadingMediaSosial] = useState(false)
+  const [mediaSosial, setMediaSosial] = useState<MediaSosialLinks | null>(null)
+  const [error, setError] = useState<string | null>(null)
   
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
-  // Fetch document types untuk kategori sosial_media
+  // Fetch document types untuk kategori sosial media
   const fetchDocumentTypes = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
-      if (!token) return
+      if (!token) {
+        throw new Error('Token autentikasi tidak ditemukan')
+      }
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/document-types?category=sosial_media`, {
+      console.log('Fetching document types from:', `https://sandybrown-capybara-903436.hostingersite.com/api/document-types?category=sosial_media`)
+      const response = await fetch(`https://sandybrown-capybara-903436.hostingersite.com/api/document-types?category=sosial_media`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       })
 
-      if (!response.ok) throw new Error('Failed to fetch document types')
+      console.log('Document types response status:', response.status)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: response.statusText }))
+        throw new Error(errorData.message || `Failed to fetch document types: ${response.status}`)
+      }
 
       const data = await response.json()
-      // Pastikan data disimpan ke state
-      setDocumentTypes(data.data || [])
+      console.log('Document types raw data:', data)
+      
+      if (!data.data) {
+        throw new Error('Invalid response format: missing data property')
+      }
+
+      // Process document types
+      let processedDocTypes = (data.data || [])
+        // Filter untuk hanya Instagram Follow dan Twibbon Post saja
+        .filter((docType: any) => 
+          docType.name === 'Instagram Follow' || 
+          docType.name === 'Twibbon Post' || 
+          docType.name === 'Bukti Follow Instagram' ||
+          docType.name === 'Postingan Twibbon' ||
+          docType.code === 'instagram_follow' || 
+          docType.code === 'twibbon_post'
+        )
+        .map((docType: any) => ({
+          ...docType,
+          allowed_formats: typeof docType.allowed_formats === 'string' 
+            ? JSON.parse(docType.allowed_formats) 
+            : docType.allowed_formats || []
+        }))
+      
+      // Jika tidak ada jenis dokumen dari API, buat default
+      if (processedDocTypes.length === 0) {
+        console.warn('No document types found from API, using defaults')
+        processedDocTypes = [
+          {
+            id: 4,
+            code: 'instagram_follow',
+            name: 'Bukti Follow Instagram',
+            description: 'Screenshot bukti follow akun Instagram resmi Bersekolah',
+            category: 'sosial_media',
+            is_required: true,
+            allowed_formats: ['jpg', 'jpeg', 'png'],
+            max_file_size: 2048,
+            is_active: true
+          },
+          {
+            id: 5,
+            code: 'twibbon_post',
+            name: 'Postingan Twibbon',
+            description: 'Screenshot postingan twibbon beasiswa di Instagram',
+            category: 'sosial_media',
+            is_required: true,
+            allowed_formats: ['jpg', 'jpeg', 'png'],
+            max_file_size: 2048,
+            is_active: true
+          }
+        ]
+      }
+      
+      setDocumentTypes(processedDocTypes)
+      console.log('Processed document types:', processedDocTypes)
     } catch (error) {
       console.error('Error fetching document types:', error)
-      toast({
-        title: "Error",
-        description: "Gagal memuat jenis dokumen",
-        variant: "destructive",
-      })
+      setError(error instanceof Error ? error.message : 'Failed to load document types')
     }
   }
-  
-  // Fetch social media links from API
+
+  // Fetch media sosial data
   const fetchSocialMediaLinks = async () => {
-    setFetchingSocialLinks(true)
+    setIsLoadingMediaSosial(true)
     try {
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/media-sosial/latest`, {
+      const response = await fetch(`https://sandybrown-capybara-903436.hostingersite.com/api/media-sosial/latest`, {
         headers: {
           'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        },
-        cache: 'no-store'
+        }
       })
 
       if (!response.ok) {
-        console.warn('Could not fetch social media links, using defaults')
-        return
+        throw new Error('Failed to fetch media sosial data')
       }
 
       const data = await response.json()
-      if (data.status === 'success' && data.data) {
-        const links = data.data
-        // Only update if we actually have links
-        if (links.instagram_link || links.twibbon_link) {
-          setSocialLinks({
-            instagram_link: links.instagram_link || defaultLinks.instagram_link,
-            twibbon_link: links.twibbon_link || defaultLinks.twibbon_link,
-            id: links.id,
-            created_at: links.created_at,
-            updated_at: links.updated_at
-          })
-          console.log('Social media links loaded:', links)
-        }
+      if (data.data) {
+        setMediaSosial(data.data)
       }
     } catch (error) {
-      console.error('Error fetching social media links:', error)
-      // Keep using default links (already set in state)
+      console.error('Error fetching media sosial data:', error)
     } finally {
-      setFetchingSocialLinks(false)
+      setIsLoadingMediaSosial(false)
     }
   }
-    // Fetch uploaded documents untuk kategori sosial_media SAJA
+
+  // Fetch dokumen yang sudah diunggah
   const fetchDocuments = async () => {
     try {
       const token = localStorage.getItem('bersekolah_auth_token')
-      if (!token) return
+      if (!token) {
+        throw new Error('Token autentikasi tidak ditemukan')
+      }
 
-      // Add cache buster to avoid browser caching
-      const cacheBuster = new Date().getTime()
+      const cacheBuster = Date.now()
+      console.log(`Fetching sosmed documents with cache buster: ${cacheBuster}`)
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/my-documents?category=sosial_media&nocache=${cacheBuster}`, {
+      const response = await fetch(`https://sandybrown-capybara-903436.hostingersite.com/api/my-documents?category=sosial_media&nocache=${cacheBuster}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        },
-        cache: 'no-store'
+          'Accept': 'application/json'
+        }
       })
 
+      console.log('Documents response status:', response.status)
       if (!response.ok) {
-        throw new Error('Failed to fetch documents')
+        const errorData = await response.json().catch(() => ({ message: response.statusText }))
+        throw new Error(errorData.message || `Failed to fetch documents: ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('Documents raw data:', data)
       
-      // Use robust API response handling - check for data.data instead of data.success
-      if (data.data && Array.isArray(data.data)) {
-        console.log('[SosmedPage] Raw API response:', data)
-        
-        // Process data before setting it - filter for sosial_media document types
-        const processedDocs = data.data
-          .filter((doc: any) => {
-            // Get document type information - enhanced matching
-            const docTypeId = doc.document_type?.id || doc.document_type_id || 0;
-            const docTypeCode = doc.document_type?.code || doc.document_type_code || doc.document_type || '';
-            const docTypeCategory = doc.document_type?.category || '';
-            
-            // Include documents that match either:
-            // 1. Document type IDs 4-5 (sosial_media category documents) 
-            // 2. Document codes for sosial_media documents
-            // 3. Documents explicitly in sosial_media category
-            const isSosmedDoc = (
-              // By ID (4-5, which are sosial_media type documents)
-              (docTypeId >= 4 && docTypeId <= 5) ||
-              // By code for sosial_media documents
-              ['instagram_follow', 'twibbon_post'].includes(docTypeCode) ||
-              // By explicit category
-              (docTypeCategory === 'sosial_media')
-            );
-            
-            console.log(`[SosmedPage] Document ${doc.id}: typeId=${docTypeId}, code=${docTypeCode}, category=${docTypeCategory}, isSosmed=${isSosmedDoc}`)
-            return isSosmedDoc;
-          })
-          .map((doc: any) => {
-            // Enhanced document data extraction with nested properties support
-            const docType = doc.document_type || {};
-            
-            const processedDoc = {
-              id: doc.id || 0,
-              document_type: docType.code || doc.document_type_code || doc.document_type || 'unknown',
-              document_type_id: docType.id || doc.document_type_id || 0,
-              document_type_name: docType.name || '',
-              document_type_code: docType.code || doc.document_type_code || doc.document_type || 'unknown', // Add this for compatibility
-              status: doc.status || 'pending',
-              file_path: doc.file_path || '',
-              file_name: doc.file_name || 'Document file',
-              file_type: doc.file_type || '',
-              file_size: doc.file_size || 0,
-              keterangan: doc.keterangan || '',
-              created_at: doc.created_at || new Date().toISOString(),
-              updated_at: doc.updated_at || null,
-              verified_at: doc.verified_at || null,
-              verified_by: doc.verified_by || null
-            };
-            
-            console.log(`[SosmedPage] Processed doc: id=${processedDoc.id}, type=${processedDoc.document_type}, code=${processedDoc.document_type_code}`)
-            return processedDoc;
-          });
-          
-        console.log(`[SosmedPage] Total processed sosmed docs: ${processedDocs.length}`)
-          
-        // Update documents state
-        setUploadedDocs(processedDocs)
-        
-        // REMOVED: No more delay or forceUpdateCounter increment here
-        // This was causing the infinite loop!
-      } else {
-        console.log('[SosmedPage] No data found in API response or data is not an array')
-        setUploadedDocs([])
+      if (!data.data) {
+        throw new Error('Invalid response format: missing data property')
       }
+
+      // Filter untuk hanya dokumen sosial media
+      const sosmedDocs = (data.data || []).filter((doc: any) => 
+        doc.document_type === 'instagram_follow' || 
+        doc.document_type === 'twibbon_post' ||
+        doc.document_type_code === 'instagram_follow' || 
+        doc.document_type_code === 'twibbon_post'
+      )
+      
+      setUploadedDocs(sosmedDocs)
+      console.log('Filtered sosmed documents:', sosmedDocs)
     } catch (error) {
-      console.error('Error fetching sosmed documents:', error)
-      toast({
-        title: "Error",
-        description: "Gagal memuat data dokumen",
-        variant: "destructive",
-      })
-      // Set empty array to prevent undefined errors
-      setUploadedDocs([])
-    } finally {
-      setIsLoading(false)
+      console.error('Error fetching documents:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load documents')
     }
   }
 

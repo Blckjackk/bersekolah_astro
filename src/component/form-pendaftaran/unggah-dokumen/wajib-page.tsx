@@ -210,7 +210,7 @@ export default function DokumenWajibPage() {
         return
       }
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/document-types?category=wajib`, {
+      const response = await fetch(`https://sandybrown-capybara-903436.hostingersite.com/api/document-types?category=wajib`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -243,7 +243,7 @@ export default function DokumenWajibPage() {
       console.log(`Fetching documents with cache buster: ${cacheBuster}`)
       
       // Explicitly request wajib category documents
-      const response = await fetch(`${import.meta.env.PUBLIC_API_BASE_URL}/my-documents?category=wajib&nocache=${cacheBuster}`, {
+      const response = await fetch(`https://sandybrown-capybara-903436.hostingersite.com/api/my-documents?category=wajib&nocache=${cacheBuster}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

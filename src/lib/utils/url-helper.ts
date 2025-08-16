@@ -1,19 +1,9 @@
 // Environment-aware URL helper for all services
 export const getEnvironmentUrls = () => {
-  const isProduction = import.meta.env.PROD;
-  
   return {
-    apiUrl: isProduction 
-      ? 'https://sandybrown-capybara-903436.hostingersite.com/api'
-      : import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
-    
-    baseUrl: isProduction
-      ? 'https://sandybrown-capybara-903436.hostingersite.com'
-      : (import.meta.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'),
-      
-    storageUrl: isProduction
-      ? 'https://sandybrown-capybara-903436.hostingersite.com/storage'
-      : (import.meta.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000') + '/storage'
+    apiUrl: 'https://sandybrown-capybara-903436.hostingersite.com/api',
+    baseUrl: 'https://sandybrown-capybara-903436.hostingersite.com',
+    storageUrl: 'https://sandybrown-capybara-903436.hostingersite.com/storage'
   };
 };
 

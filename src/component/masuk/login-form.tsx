@@ -62,15 +62,8 @@ export function LoginForm({
     // ✅ ADDED: Clear general error saat submit
     setGeneralError("")
     
-    // ✅ FIXED: Gunakan URL lengkap API atau fallback ke URL default
-    // Pastikan ini sesuai dengan alamat API Laravel Anda
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
-    console.log("Base URL yang digunakan:", baseURL);
-    
     try {
-      console.log("Mengirim data login:", { email: formData.email });
-      console.log("API URL:", `${baseURL}/login`);
-      
+      const baseURL = "https://sandybrown-capybara-903436.hostingersite.com/api";
       const response = await fetch(`${baseURL}/login`, {
         method: 'POST',
         headers: {

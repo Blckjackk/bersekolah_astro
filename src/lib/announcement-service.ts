@@ -13,7 +13,7 @@ export interface Announcement {
 }
 
 // Helper functions for API requests
-const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = 'https://sandybrown-capybara-903436.hostingersite.com/api';
 
 // Function to get auth token
 const getAuthToken = (): string | null => {

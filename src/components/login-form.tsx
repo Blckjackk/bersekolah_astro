@@ -64,23 +64,16 @@ export function LoginForm({
     // ✅ ADDED: Clear general error saat submit
     setGeneralError("")
     
-    // ✅ FIXED: Gunakan URL lengkap API atau fallback ke URL default
-    // Pastikan ini sesuai dengan alamat API Laravel Anda
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
-    console.log("Base URL yang digunakan:", baseURL);
-    
     try {
-      console.log("Mengirim data login:", { email: formData.email });
-      console.log("API URL:", `${baseURL}/login`);
-      
+      const baseURL = "https://sandybrown-capybara-903436.hostingersite.com/api";
       const response = await fetch(`${baseURL}/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
-      })      // ✅ FIXED: Tambahkan handling untuk response yang bukan JSON
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      });
+
       let result;
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -91,7 +84,8 @@ export function LoginForm({
         console.log("Response bukan JSON:", text.substring(0, 100) + "...");
         throw new Error("Server mengembalikan respons yang bukan JSON");
       }
-        if (response.ok) {
+
+      if (response.ok) {
         // Jika "Remember me" dicentang, simpan email
         if (rememberEmail) {
           localStorage.setItem('bersekolah_remember_email', formData.email);

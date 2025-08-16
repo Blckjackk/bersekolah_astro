@@ -2,10 +2,7 @@ import { z } from 'zod';
 
 // Environment-aware API URL
 const getApiUrl = () => {
-  if (import.meta.env.PROD) {
-    return 'https://sandybrown-capybara-903436.hostingersite.com/api';
-  }
-  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+  return 'https://sandybrown-capybara-903436.hostingersite.com/api';
 };
 
 const API_URL = getApiUrl();

@@ -1,6 +1,10 @@
 // Environment-aware API URL
 const getApiUrl = () => {
-  return import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+  return 'https://sandybrown-capybara-903436.hostingersite.com/api';
+};
+
+const getBaseUrl = () => {
+  return 'https://sandybrown-capybara-903436.hostingersite.com';
 };
 
 const API_URL = getApiUrl();
@@ -21,9 +25,7 @@ export interface Testimoni {
 export const TestimoniService = {
   // Helper function untuk mendapatkan URL gambar testimoni
   getImageUrl: (imagePath?: string): string => {
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://sandybrown-capybara-903436.hostingersite.com'
-      : (import.meta.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000');
+    const baseUrl = getBaseUrl();
     
     // If no image path provided, return default
     if (!imagePath || imagePath === 'null' || imagePath === '') {

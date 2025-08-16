@@ -57,7 +57,7 @@ export function ResetPasswordForm({
     setErrors({})
     setGeneralError("")
     
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+    const baseURL = "https://sandybrown-capybara-903436.hostingersite.com/api";
     
     try {
       // Request OTP ke email
@@ -123,7 +123,7 @@ export function ResetPasswordForm({
       return;
     }
     
-    const baseURL = import.meta.env.PUBLIC_API_BASE_URL || "http://localhost:8000/api";
+    const baseURL = "https://sandybrown-capybara-903436.hostingersite.com/api";
     
     try {
       // Reset password dengan OTP

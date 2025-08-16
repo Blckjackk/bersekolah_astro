@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const API_URL = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+const API_URL = 'https://sandybrown-capybara-903436.hostingersite.com/api';
 
 export const ContentSchema = z.object({
   id: z.number(),
