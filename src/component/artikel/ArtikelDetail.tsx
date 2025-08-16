@@ -20,7 +20,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
   // Helper function to get correct image URL
   const getImageUrl = (article: Article | null) => {
     const baseUrl = import.meta.env.PROD 
-      ? 'https://web-production-0cc6.up.railway.app'
+      ? 'https://sandybrown-capybara-903436.hostingersite.com'
       : 'http://localhost:8000';
     
     if (!article) return `${baseUrl}/storage/defaults/artikel-default.jpg`;
@@ -56,7 +56,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
       return;
     }
 
-    fetch(`${import.meta.env.PROD ? 'https://web-production-0cc6.up.railway.app' : 'http://localhost:8000'}/api/konten/${articleId}`)
+    fetch(`${import.meta.env.PROD ? 'https://sandybrown-capybara-903436.hostingersite.com' : 'http://localhost:8000'}/api/konten/${articleId}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("Article detail API response:", data);

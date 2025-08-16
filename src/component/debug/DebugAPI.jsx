@@ -7,7 +7,7 @@ const DebugAPI = () => {
   useEffect(() => {
     // Environment-aware API URL
     const API_URL = import.meta.env.PROD 
-      ? 'https://web-production-0cc6.up.railway.app/api'
+      ? 'https://sandybrown-capybara-903436.hostingersite.com/api'
       : import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
 
     // Test Mentor API

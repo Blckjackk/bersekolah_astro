@@ -17,7 +17,7 @@ const Testimonial = () => {
       try {
         // Environment-aware API URL
         const apiUrl = import.meta.env.PROD 
-          ? 'https://web-production-0cc6.up.railway.app/api/testimoni'
+          ? 'https://sandybrown-capybara-903436.hostingersite.com/api/testimoni'
           : 'http://localhost:8000/api/testimoni';
           
         const response = await fetch(apiUrl);

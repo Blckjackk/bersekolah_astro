@@ -4,16 +4,16 @@ export const getEnvironmentUrls = () => {
   
   return {
     apiUrl: isProduction 
-      ? 'https://web-production-0cc6.up.railway.app/api'
+      ? 'https://sandybrown-capybara-903436.hostingersite.com/api'
       : import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api',
     
     baseUrl: isProduction
-      ? 'https://web-production-0cc6.up.railway.app'
-      : 'http://localhost:8000',
+      ? 'https://sandybrown-capybara-903436.hostingersite.com'
+      : (import.meta.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'),
       
     storageUrl: isProduction
-      ? 'https://web-production-0cc6.up.railway.app/storage'
-      : 'http://localhost:8000/storage'
+      ? 'https://sandybrown-capybara-903436.hostingersite.com/storage'
+      : (import.meta.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000') + '/storage'
   };
 };
 

@@ -8,12 +8,12 @@ export default defineConfig({
     server: {
       host: true,
       proxy: {
-        // Proxy API requests to your Laravel backend
-        '/api': {
-          target: 'http://localhost:8000',
-          changeOrigin: true,
-          secure: false,
-        }
+          // Proxy API requests to your Laravel backend
+          '/api': {
+            target: process.env.PUBLIC_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000',
+            changeOrigin: true,
+            secure: false,
+          }
       }
     },
     envPrefix: 'PUBLIC_',

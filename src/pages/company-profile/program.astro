@@ -42,49 +42,49 @@ import AppLayout from "../../layout/app-layout.astro";
                                 <div class="flex items-center justify-center space-x-1 sm:space-x-2 lg:space-x-4">
                                     <!-- Days -->
                                     <div class="flex flex-col items-center">
-                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl">
+                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 sm:rounded-xl">
                                             <span id="days" class="text-sm sm:text-lg lg:text-2xl font-bold text-[#406386]">00</span>
                                         </div>
                                         <span class="mt-1 text-xs font-medium text-white sm:text-sm">Hari</span>
                                     </div>
                                     
                                     <!-- Separator -->
-                                    <div class="flex flex-col items-center justify-center text-sm sm:text-lg lg:text-xl font-bold text-white">
+                                    <div class="flex flex-col items-center justify-center text-sm font-bold text-white sm:text-lg lg:text-xl">
                                         <div class="flex items-center h-10 sm:h-14 lg:h-16">:</div>
                                         <div class="h-2 mt-1 sm:h-3 sm:mt-1"></div>
                                     </div>
                                     
                                     <!-- Hours -->
                                     <div class="flex flex-col items-center">
-                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl">
+                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 sm:rounded-xl">
                                             <span id="hours" class="text-sm sm:text-lg lg:text-2xl font-bold text-[#406386]">00</span>
                                         </div>
                                         <span class="mt-1 text-xs font-medium text-white sm:text-sm">Jam</span>
                                     </div>
                                     
                                     <!-- Separator -->
-                                    <div class="flex flex-col items-center justify-center text-sm sm:text-lg lg:text-xl font-bold text-white">
+                                    <div class="flex flex-col items-center justify-center text-sm font-bold text-white sm:text-lg lg:text-xl">
                                         <div class="flex items-center h-10 sm:h-14 lg:h-16">:</div>
                                         <div class="h-2 mt-1 sm:h-3 sm:mt-1"></div>
                                     </div>
                                     
                                     <!-- Minutes -->
                                     <div class="flex flex-col items-center">
-                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl">
+                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 sm:rounded-xl">
                                             <span id="minutes" class="text-sm sm:text-lg lg:text-2xl font-bold text-[#406386]">00</span>
                                         </div>
                                         <span class="mt-1 text-xs font-medium text-white sm:text-sm">Menit</span>
                                     </div>
                                     
                                     <!-- Separator -->
-                                    <div class="flex flex-col items-center justify-center text-sm sm:text-lg lg:text-xl font-bold text-white">
+                                    <div class="flex flex-col items-center justify-center text-sm font-bold text-white sm:text-lg lg:text-xl">
                                         <div class="flex items-center h-10 sm:h-14 lg:h-16">:</div>
                                         <div class="h-2 mt-1 sm:h-3 sm:mt-1"></div>
                                     </div>
                                     
                                     <!-- Seconds -->
                                     <div class="flex flex-col items-center">
-                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl">
+                                        <div class="flex items-center justify-center w-10 h-10 border-2 border-blue-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:w-14 sm:h-14 lg:w-16 lg:h-16 sm:rounded-xl">
                                             <span id="seconds" class="text-sm sm:text-lg lg:text-2xl font-bold text-[#406386]">00</span>
                                         </div>
                                         <span class="mt-1 text-xs font-medium text-white sm:text-sm">Detik</span>
@@ -94,7 +94,7 @@ import AppLayout from "../../layout/app-layout.astro";
                             
                             <!-- Expired Registration State -->
                             <div class="hidden countdown-expired">
-                                <div class="px-4 py-3 border-2 border-red-100 shadow-lg bg-white/90 backdrop-blur-sm rounded-lg sm:px-6 sm:py-4 sm:rounded-xl">
+                                <div class="px-4 py-3 border-2 border-red-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:px-6 sm:py-4 sm:rounded-xl">
                                     <div class="flex items-center space-x-2 sm:space-x-3">
                                         <svg class="w-5 h-5 text-red-500 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -106,7 +106,7 @@ import AppLayout from "../../layout/app-layout.astro";
                             
                             <!-- Error State -->
                             <div class="hidden countdown-error">
-                                <div class="px-4 py-3 border-2 border-red-100 shadow-lg bg-white/90 backdrop-blur-sm rounded-lg sm:px-6 sm:py-4 sm:rounded-xl">
+                                <div class="px-4 py-3 border-2 border-red-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:px-6 sm:py-4 sm:rounded-xl">
                                     <div class="flex items-center space-x-2 sm:space-x-3">
                                         <svg class="w-5 h-5 text-red-500 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -363,7 +363,7 @@ import AppLayout from "../../layout/app-layout.astro";
           <!-- Header with icon and title -->
           <div class="flex flex-col items-start gap-3 mb-6 sm:flex-row sm:items-center sm:gap-4 lg:gap-6 sm:mb-8">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl shadow-md">
-              <svg class="text-white w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-white sm:w-7 sm:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
               </svg>
             </div>
@@ -403,7 +403,7 @@ import AppLayout from "../../layout/app-layout.astro";
       
       <div class="max-w-6xl mx-auto space-y-3 sm:space-y-4 lg:space-y-6">
         <!-- Benefit 1 - Dukungan Finansial -->
-        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
+        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 rounded-lg shadow-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 flex-shrink-0 self-start">
               <svg class="w-4 h-4 text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,7 +412,7 @@ import AppLayout from "../../layout/app-layout.astro";
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-bold text-[#406386] text-sm sm:text-base lg:text-lg xl:text-xl mb-2 sm:mb-3">Dukungan Finansial</h4>
-              <p class="text-xs leading-relaxed text-gray-600 sm:text-sm lg:text-base break-words">
+              <p class="text-xs leading-relaxed text-gray-600 break-words sm:text-sm lg:text-base">
                 Bantuan dana pendidikan sebesar <span class="font-semibold text-[#406386]">Rp 500.000/bulan</span> untuk mendukung kebutuhan belajar dan pengembangan akademik siswa.
               </p>
             </div>
@@ -420,7 +420,7 @@ import AppLayout from "../../layout/app-layout.astro";
         </div>
 
         <!-- Benefit 2 - Pendampingan Mentor -->
-        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
+        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 rounded-lg shadow-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 flex-shrink-0 self-start">
               <svg class="w-4 h-4 text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,7 +429,7 @@ import AppLayout from "../../layout/app-layout.astro";
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-bold text-[#406386] text-sm sm:text-base lg:text-lg xl:text-xl mb-2 sm:mb-3">Pendampingan Mentor</h4>
-              <p class="text-xs leading-relaxed text-gray-600 sm:text-sm lg:text-base break-words">
+              <p class="text-xs leading-relaxed text-gray-600 break-words sm:text-sm lg:text-base">
                 Pendampingan intensif dari <span class="font-semibold text-[#406386]">mentor berpengalaman</span> untuk pengembangan akademik dan personal melalui sesi konsultasi rutin.
               </p>
             </div>
@@ -437,7 +437,7 @@ import AppLayout from "../../layout/app-layout.astro";
         </div>
 
         <!-- Benefit 3 - Pelatihan Soft Skill -->
-        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
+        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 rounded-lg shadow-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 flex-shrink-0 self-start">
               <svg class="w-4 h-4 text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,7 +446,7 @@ import AppLayout from "../../layout/app-layout.astro";
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-bold text-[#406386] text-sm sm:text-base lg:text-lg xl:text-xl mb-2 sm:mb-3">Pelatihan Soft Skill</h4>
-              <p class="text-xs leading-relaxed text-gray-600 sm:text-sm lg:text-base break-words">
+              <p class="text-xs leading-relaxed text-gray-600 break-words sm:text-sm lg:text-base">
                 Akses ke berbagai <span class="font-semibold text-[#406386]">pelatihan pengembangan diri</span> seperti leadership, public speaking, dan keterampilan hidup lainnya.
               </p>
             </div>
@@ -454,7 +454,7 @@ import AppLayout from "../../layout/app-layout.astro";
         </div>
 
         <!-- Benefit 4 - Jaringan Alumnus -->
-        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
+        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 rounded-lg shadow-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 flex-shrink-0 self-start">
               <svg class="w-4 h-4 text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -463,7 +463,7 @@ import AppLayout from "../../layout/app-layout.astro";
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-bold text-[#406386] text-sm sm:text-base lg:text-lg xl:text-xl mb-2 sm:mb-3">Jaringan Alumnus</h4>
-              <p class="text-xs leading-relaxed text-gray-600 sm:text-sm lg:text-base break-words">
+              <p class="text-xs leading-relaxed text-gray-600 break-words sm:text-sm lg:text-base">
                 Bergabung dengan <span class="font-semibold text-[#406386]">komunitas beswan alumni</span> yang solid dan supportif untuk networking dan career development.
               </p>
             </div>
@@ -471,7 +471,7 @@ import AppLayout from "../../layout/app-layout.astro";
         </div>
 
         <!-- Benefit 5 - Kunjungan Edukatif -->
-        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
+        <div class="p-3 transition-all duration-300 bg-white border border-gray-100 rounded-lg shadow-lg sm:p-4 lg:p-6 xl:p-8 sm:rounded-xl lg:rounded-2xl hover:shadow-xl group">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4 lg:gap-6">
             <div class="bg-gradient-to-br from-[#406386] to-[#2d4a67] p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 flex-shrink-0 self-start">
               <svg class="w-4 h-4 text-white sm:w-5 sm:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +480,7 @@ import AppLayout from "../../layout/app-layout.astro";
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-bold text-[#406386] text-sm sm:text-base lg:text-lg xl:text-xl mb-2 sm:mb-3">Kunjungan Edukatif</h4>
-              <p class="text-xs leading-relaxed text-gray-600 sm:text-sm lg:text-base break-words">
+              <p class="text-xs leading-relaxed text-gray-600 break-words sm:text-sm lg:text-base">
                 Kesempatan mengunjungi <span class="font-semibold text-[#406386]">kampus dan institusi terkemuka</span> untuk memberikan wawasan dan inspirasi tentang masa depan pendidikan.
               </p>
             </div>
