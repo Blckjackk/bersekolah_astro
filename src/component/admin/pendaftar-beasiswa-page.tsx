@@ -162,8 +162,20 @@ export default function PendaftarBeasiswaPage() {
       const data = await ApplicantService.getBeswanList(periodId);
       console.log('Fetched applicant data:', data);
       
+      // Debug specific data untuk alamat dan pendidikan
+      if (data.length > 0) {
+        console.log('Sample alamat data:', data[0].alamat);
+        console.log('Sample sekolah data:', data[0].sekolah);
+      }
+      
       // Transform data dari struktur Laravel ke struktur yang diharapkan komponen
-      const transformedData: BeswanListItem[] = data.map(beswan => ({
+      const transformedData: BeswanListItem[] = data.map(beswan => {
+        console.log('Processing beswan:', beswan.id, {
+          alamat: beswan.alamat,
+          sekolah: beswan.sekolah
+        });
+        
+        return {
         id: beswan.id?.toString() || "0",
         status: "Pending" as const, // Default status, bisa disesuaikan dengan field dari API
         applicationDate: beswan.created_at || new Date().toISOString(),
@@ -179,11 +191,11 @@ export default function PendaftarBeasiswaPage() {
           birthDate: beswan.tanggal_lahir || "",
           address: beswan.tempat_lahir || "",
           gender: beswan.jenis_kelamin || "",
-          school: beswan.sekolah?.nama_sekolah || "",
+          school: (beswan.sekolah as any)?.asal_sekolah || "",
           religion: beswan.agama || "",
           childNumber: beswan.keluarga?.anak_ke || 1,
           totalSiblings: beswan.keluarga?.jumlah_saudara || 1,
-          whatsapp: beswan.user?.email || "" // Sementara pakai email, nanti bisa ditambah field whatsapp
+          whatsapp: beswan.user?.email || ""
         },
         familyData: {
           fatherName: beswan.keluarga?.nama_ayah || "",
@@ -193,9 +205,28 @@ export default function PendaftarBeasiswaPage() {
           motherJob: beswan.keluarga?.pekerjaan_ibu || "",
           motherIncome: beswan.keluarga?.penghasilan_ibu || ""
         },
+        addressData: beswan.alamat ? {
+          fullAddress: beswan.alamat.alamat_lengkap || "",
+          rt: (beswan.alamat as any).rt || "",
+          rw: (beswan.alamat as any).rw || "",
+          village: (beswan.alamat as any).kelurahan_desa || "",
+          district: (beswan.alamat as any).kecamatan || "",
+          city: (beswan.alamat as any).kota_kabupaten || "",
+          province: beswan.alamat.provinsi || "",
+          postalCode: beswan.alamat.kode_pos || "",
+          phone: (beswan.alamat as any).nomor_telepon || "",
+          emergencyContact: (beswan.alamat as any).kontak_darurat || ""
+        } : undefined,
+        educationData: beswan.sekolah ? {
+          schoolName: (beswan.sekolah as any).asal_sekolah || "",
+          schoolRegion: (beswan.sekolah as any).daerah_sekolah || "",
+          major: beswan.sekolah.jurusan || "",
+          level: (beswan.sekolah as any).tingkat_kelas || ""
+        } : undefined,
         documents: [],
         essays: []
-      }));
+        };
+      });
 
       setApplicants(transformedData);
       updateStats(transformedData);
@@ -262,7 +293,7 @@ export default function PendaftarBeasiswaPage() {
           birthDate: detailData.tanggal_lahir || "",
           address: detailData.tempat_lahir || "",
           gender: detailData.jenis_kelamin || "",
-          school: detailData.sekolah?.nama_sekolah || "",
+          school: (detailData.sekolah as any)?.asal_sekolah || "",
           religion: detailData.agama || "",
           childNumber: detailData.keluarga?.anak_ke || 1,
           totalSiblings: detailData.keluarga?.jumlah_saudara || 1,
@@ -276,11 +307,42 @@ export default function PendaftarBeasiswaPage() {
           motherJob: detailData.keluarga?.pekerjaan_ibu || "",
           motherIncome: detailData.keluarga?.penghasilan_ibu || ""
         },
+        addressData: detailData.alamat ? {
+          fullAddress: detailData.alamat.alamat_lengkap || "",
+          rt: (detailData.alamat as any).rt || "",
+          rw: (detailData.alamat as any).rw || "",
+          village: (detailData.alamat as any).kelurahan_desa || "",
+          district: (detailData.alamat as any).kecamatan || "",
+          city: (detailData.alamat as any).kota_kabupaten || "",
+          province: detailData.alamat.provinsi || "",
+          postalCode: detailData.alamat.kode_pos || "",
+          phone: (detailData.alamat as any).nomor_telepon || "",
+          emergencyContact: (detailData.alamat as any).kontak_darurat || ""
+        } : undefined,
+        educationData: detailData.sekolah ? {
+          schoolName: (detailData.sekolah as any).asal_sekolah || "",
+          schoolRegion: (detailData.sekolah as any).daerah_sekolah || "",
+          major: detailData.sekolah.jurusan || "",
+          level: (detailData.sekolah as any).tingkat_kelas || ""
+        } : undefined,
         documents: [],
         essays: []
       };
       
       setSelectedBeswan(transformedDetail);
+      
+      // Debug log untuk modal detail
+      console.log('handleViewDetail - detailData from API:', {
+        id: detailData.id,
+        alamat: detailData.alamat,
+        sekolah: detailData.sekolah
+      });
+      console.log('handleViewDetail - transformedDetail:', {
+        id: transformedDetail.id,
+        addressData: transformedDetail.addressData,
+        educationData: transformedDetail.educationData,
+        fullDetail: transformedDetail
+      });
     } catch (err) {
       console.error("Error fetching applicant detail:", err);
       showToast("Gagal memuat detail pendaftar", "error");
@@ -361,7 +423,7 @@ export default function PendaftarBeasiswaPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid gap-4 mb-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-0 shadow-md bg-gradient-to-br from-[#406386] to-[#406386]/90">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -369,7 +431,7 @@ export default function PendaftarBeasiswaPage() {
                   <p className="text-sm font-medium text-white/90">Total Pendaftar</p>
                   <p className="text-3xl font-bold text-white">{stats.total}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-full">
+                <div className="p-3 rounded-full bg-white/20">
                   <Users className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -506,7 +568,7 @@ export default function PendaftarBeasiswaPage() {
                     <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
                       Tanggal Daftar
                     </TableHead>
-                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase text-right">
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-right text-gray-700 uppercase">
                       Aksi
                     </TableHead>
                   </TableRow>
@@ -518,7 +580,7 @@ export default function PendaftarBeasiswaPage() {
                     const ttl = `${tempatLahir}, ${tanggalLahir}`;
                     
                     return (
-                      <TableRow key={applicant.id} className="hover:bg-gray-50 transition-colors">
+                      <TableRow key={applicant.id} className="transition-colors hover:bg-gray-50">
                         <TableCell className="px-6 py-4">
                           <div className="flex items-center">
                             <span className="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
@@ -536,7 +598,7 @@ export default function PendaftarBeasiswaPage() {
                                 </span>
                               </div>
                             </div>
-                            <div className="min-w-0 flex-1">
+                            <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">
                                 {applicant.personalData.fullName || '-'}
                               </p>
@@ -552,9 +614,9 @@ export default function PendaftarBeasiswaPage() {
                             <p className="text-sm text-gray-900">
                               <span className="font-medium">Panggilan:</span> {applicant.personalData.nickname || '-'}
                             </p>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="mt-1 text-sm text-gray-500">
                               <span className="font-medium">Gender:</span> {applicant.personalData.gender || '-'} • 
-                              <span className="font-medium ml-2">Agama:</span> {applicant.personalData.religion || '-'}
+                              <span className="ml-2 font-medium">Agama:</span> {applicant.personalData.religion || '-'}
                             </p>
                           </div>
                         </TableCell>
@@ -589,7 +651,7 @@ export default function PendaftarBeasiswaPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteClick(applicant)} 
-                                className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                                className="flex items-center gap-2 text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
                               >
                                 <Trash2 className="w-4 h-4" />
                                 Hapus Data
@@ -643,7 +705,7 @@ export default function PendaftarBeasiswaPage() {
               </div>
               
               {/* Information Grid */}
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6">
                 {/* Data Pribadi */}
                 <Card className="border-0 shadow-sm bg-gray-50/50">
                   <CardHeader className="pb-4">
@@ -653,28 +715,36 @@ export default function PendaftarBeasiswaPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Lengkap</p>
                         <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.fullName || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Panggilan</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Panggilan</p>
                         <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.nickname || '-'}</p>
                       </div>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">WhatsApp</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.whatsapp || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jenis Kelamin</p>
                         <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.gender || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Agama</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Agama</p>
                         <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.religion || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Anak ke-</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.childNumber || '-'} dari {selectedBeswan.personalData.totalSiblings || '-'} bersaudara</p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Tempat, Tanggal Lahir</p>
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Tempat, Tanggal Lahir</p>
                       <p className="mt-1 text-sm font-medium text-gray-900">
                         {selectedBeswan.personalData.address || '-'}, {selectedBeswan.personalData.birthDate ? formatDate(selectedBeswan.personalData.birthDate) : '-'}
                       </p>
@@ -692,17 +762,126 @@ export default function PendaftarBeasiswaPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Sekolah/Perguruan Tinggi</p>
-                      <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.school || 'Belum diisi'}</p>
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Sekolah/Perguruan Tinggi</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.schoolName || selectedBeswan.personalData.school || 'Belum diisi'}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jenjang</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.level || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jurusan</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.major || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Daerah Sekolah</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.schoolRegion || '-'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Data Keluarga */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Keluarga
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                      {/* Data Ayah */}
+                      <div className="space-y-4">
+                        <h4 className="pb-2 font-medium text-gray-800 border-b border-gray-200">Data Ayah</h4>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherName || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Pekerjaan Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherJob || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Penghasilan Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherIncome || '-'}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Data Ibu */}
+                      <div className="space-y-4">
+                        <h4 className="pb-2 font-medium text-gray-800 border-b border-gray-200">Data Ibu</h4>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherName || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Pekerjaan Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherJob || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Penghasilan Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherIncome || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Data Alamat */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Alamat
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Alamat Lengkap</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.fullAddress || '-'}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">RT</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.rt || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">RW</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.rw || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kelurahan/Desa</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.village || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kecamatan</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.district || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kota/Kabupaten</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.city || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Provinsi</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.province || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kode Pos</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.postalCode || '-'}</p>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang</p>
-                        <p className="mt-1 text-sm font-medium text-gray-900">-</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nomor Telepon</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.phone || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Jurusan</p>
-                        <p className="mt-1 text-sm font-medium text-gray-900">-</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kontak Darurat</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.emergencyContact || '-'}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -724,18 +903,18 @@ export default function PendaftarBeasiswaPage() {
       <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader className="pb-4 text-center">
-            <div className="mx-auto mb-4 flex items-center justify-center w-16 h-16 bg-red-100 rounded-full">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
               <Trash2 className="w-8 h-8 text-red-600" />
             </div>
             <DialogTitle className="text-xl text-gray-900">Hapus Data Pendaftar</DialogTitle>
-            <DialogDescription className="text-gray-600 mt-2">
+            <DialogDescription className="mt-2 text-gray-600">
               Tindakan ini tidak dapat dibatalkan. Data pendaftar akan dihapus secara permanen dari sistem.
             </DialogDescription>
           </DialogHeader>
           
           <div className="py-4">
             {selectedBeswan && (
-              <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+              <div className="p-4 border border-red-200 rounded-lg bg-red-50">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
                     <span className="text-sm font-medium text-red-700">

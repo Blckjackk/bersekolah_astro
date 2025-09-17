@@ -45,6 +45,26 @@ export const FamilyDataSchema = z.object({
   motherIncome: z.string()
 });
 
+export const AddressDataSchema = z.object({
+  fullAddress: z.string(),
+  rt: z.string(),
+  rw: z.string(),
+  village: z.string(),
+  district: z.string(),
+  city: z.string(),
+  province: z.string(),
+  postalCode: z.string(),
+  phone: z.string(),
+  emergencyContact: z.string()
+});
+
+export const EducationDataSchema = z.object({
+  schoolName: z.string(),
+  schoolRegion: z.string(),
+  major: z.string(),
+  level: z.string()
+});
+
 export const DocumentSchema = z.object({
   name: z.string(),
   status: z.enum(["complete", "incomplete"])
@@ -62,6 +82,8 @@ export const ApplicantSchema = z.object({
   applicationDetails: ApplicationDetailsSchema,
   personalData: PersonalDataSchema,
   familyData: FamilyDataSchema,
+  addressData: AddressDataSchema.optional(),
+  educationData: EducationDataSchema.optional(),
   documents: z.array(DocumentSchema),
   essays: z.array(EssaySchema)
 });
