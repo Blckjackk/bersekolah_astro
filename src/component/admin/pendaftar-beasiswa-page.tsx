@@ -3,29 +3,27 @@
 import React, { useState, useEffect } from "react";
 import { 
   Search, 
-  PlusCircle, 
-  FileEdit, 
-  Trash2, 
-  MoreHorizontal, 
   RefreshCw,
   Users,
   CheckCircle2,
   XCircle,
   Loader2,
   Eye,
+  Trash2,
+  MoreHorizontal,
+  GraduationCap,
+  FileEdit,
   Download
 } from "lucide-react";
 
 // Import komponen UI
 import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "../../components/ui/card";
 import {
   Table,
@@ -43,6 +41,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 import { Badge } from "../../components/ui/badge";
 import {
   DropdownMenu,
@@ -50,114 +55,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 
-import { ApplicantService, type BeswanListItem } from "../../lib/applicant-service";
+// Import services
+import { ApplicantService, type Applicant } from "../../lib/applicant-service";
 
-// Tipe untuk dokumen dan media sosial
-interface Dokumen {
-  id?: number;
-  nama?: string;
-  name?: string;
-  status?: string;
-  deskripsi?: string;
-  description?: string;
-  url?: string;
-}
+// Types - menggunakan Applicant dari service
+type BeswanListItem = Applicant;
+type BeswanDetail = Applicant;
 
-interface MediaSosial {
-  id?: number;
-  jenis?: string;
-  type?: string;
-  username?: string;
-  url?: string;
-}
-
-// Memperluas tipe BeswanListItem untuk detail dokumen
-interface BeswanDetail extends BeswanListItem {
-  dokumen_wajib?: Dokumen[];
-  dokumen_pendukung?: Dokumen[];
-  media_sosial?: MediaSosial[];
-}
-
-// Error boundary component
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-}
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
-}
-
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
-
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    return { hasError: true };
-  }
-  
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("Error in component:", error, errorInfo);
-    this.setState({ error, errorInfo });
-  }
-  
-  render(): React.ReactNode {
-    if (this.state.hasError) {
-      return (
-        <div className="p-6 mt-4 text-red-800 bg-red-100 border border-red-300 rounded-lg">
-          <h2 className="mb-2 text-xl font-semibold">Error dalam komponen React</h2>
-          <p className="mb-4">Terjadi error saat merender komponen ini.</p>
-          <div className="p-4 mb-4 overflow-auto text-sm bg-white border border-red-200 rounded">
-            <pre>{this.state.error && this.state.error.toString()}</pre>
-            <pre>{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
-          </div>
-          <button 
-            className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-            onClick={() => window.location.reload()}
-          >
-            Reload Halaman
-          </button>
-        </div>
-      );
-    }
-    
-    return this.props.children;
-  }
-}
-
-// Wrapper component for performance monitoring
-const PendaftarBeasiswaWithErrorBoundary = () => {
-  return (
-    <ErrorBoundary>
-      <PendaftarBeasiswaPageContent />
-    </ErrorBoundary>
-  );
-};
-
-// Main component content
-function PendaftarBeasiswaPageContent() {
-  console.log("PendaftarBeasiswaPage component is rendering");
-  // Initialize component
-  useEffect(() => {
-    // Log initial render 
-    console.log("PendaftarBeasiswa component mounted");
-  }, []);
-  
-  // Debug imports
-  console.log("Button imported:", Button);
-  console.log("Card imported:", Card);
-  console.log("ApplicantService imported:", ApplicantService);
-    // State for applicant data
+export default function PendaftarBeasiswaPage() {
+  // State for data
   const [applicants, setApplicants] = useState<BeswanListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [periods, setPeriods] = useState<any[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<number | undefined>(undefined);
   
@@ -174,7 +87,7 @@ function PendaftarBeasiswaPageContent() {
     rejected: 0
   });
   
-  // Toast notification state for simple implementation
+  // Toast notification state
   const [toast, setToast] = useState<{
     visible: boolean;
     message: string;
@@ -184,23 +97,24 @@ function PendaftarBeasiswaPageContent() {
     message: "",
     type: "success"
   });
-  
+
+  // Computed values
+  const filteredApplicants = applicants.filter(applicant => {
+    const matchesSearch = !searchTerm || 
+      applicant.personalData.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      applicant.personalData.address?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || applicant.status.toLowerCase() === statusFilter.toLowerCase();
+    
+    return matchesSearch && matchesStatus;
+  });
+
   // Fetch data on component mount
   useEffect(() => {
     fetchPeriods();
     fetchApplicants();
   }, []);
-  
-  // Show toast message
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ visible: true, message, type });
-    
-    // Hide toast after 5 seconds
-    setTimeout(() => {
-      setToast({ ...toast, visible: false });
-    }, 5000);
-  };
-  
+
   // Fetch periods data
   const fetchPeriods = async () => {
     try {
@@ -211,7 +125,30 @@ function PendaftarBeasiswaPageContent() {
       showToast("Gagal memuat data periode", "error");
     }
   };
-    // Fetch applicants data
+
+  // Show toast message
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 5000);
+  };
+
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return '-';
+    }
+  };
+
+  // Fetch applicants data
   const fetchApplicants = async (periodId?: number, isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -219,52 +156,90 @@ function PendaftarBeasiswaPageContent() {
       } else {
         setIsLoading(true);
       }
-      
       setError(null);
-      console.log('Fetching applicant data with period ID:', periodId);
+
+      // Gunakan getBeswanList yang sesuai dengan API Laravel
+      const data = await ApplicantService.getBeswanList(periodId);
+      console.log('Fetched applicant data:', data);
       
-      // Add a safeguard try-catch block
-      try {
-        const data = await ApplicantService.getBeswanList(periodId);
-        console.log('Fetched applicant data:', data);
+      // Debug specific data untuk alamat dan pendidikan
+      if (data.length > 0) {
+        console.log('Sample alamat data:', data[0].alamat);
+        console.log('Sample sekolah data:', data[0].sekolah);
+      }
+      
+      // Transform data dari struktur Laravel ke struktur yang diharapkan komponen
+      const transformedData: BeswanListItem[] = data.map(beswan => {
+        console.log('Processing beswan:', beswan.id, {
+          alamat: beswan.alamat,
+          sekolah: beswan.sekolah
+        });
         
-        // Ensure we have an array even if API returns null or undefined
-        const safeData = Array.isArray(data) ? data : [];
-        setApplicants(safeData);
-        
-        // Update stats
-        updateStats(safeData);
-        
-        if (isRefresh) {
-          showToast("Data berhasil diperbarui", "success");
-        }
-      } catch (apiErr) {
-        console.error("API error details:", apiErr);
-        
-        // Use mock data for development if API fails
-        console.log("Using mock data since API failed");
-        const mockData: BeswanListItem[] = [
-          { 
-            id: 1,
-            user_id: 1,
-            user: { id: 1, name: 'Test User', email: 'test@example.com' }, 
-            nama_panggilan: 'Test', 
-            jenis_kelamin: 'Laki-laki', 
-            tempat_lahir: 'Jakarta', 
-            tanggal_lahir: '2000-01-01',
-            agama: 'Islam',
-            created_at: new Date().toISOString()
-          }
-        ];
-        setApplicants(mockData);
-        updateStats(mockData);
+        return {
+        id: beswan.id?.toString() || "0",
+        status: "Pending" as const, // Default status, bisa disesuaikan dengan field dari API
+        applicationDate: beswan.created_at || new Date().toISOString(),
+        applicationDetails: {
+          program: "Beasiswa Pendidikan", // Default atau dari API
+          batch: "2024", // Default atau dari API
+          currentStage: "Review Dokumen",
+          stages: []
+        },
+        personalData: {
+          fullName: beswan.user?.name || "",
+          nickname: beswan.nama_panggilan || "",
+          birthDate: beswan.tanggal_lahir || "",
+          address: beswan.tempat_lahir || "",
+          gender: beswan.jenis_kelamin || "",
+          school: (beswan.sekolah as any)?.asal_sekolah || "",
+          religion: beswan.agama || "",
+          childNumber: beswan.keluarga?.anak_ke || 1,
+          totalSiblings: beswan.keluarga?.jumlah_saudara || 1,
+          whatsapp: beswan.user?.email || ""
+        },
+        familyData: {
+          fatherName: beswan.keluarga?.nama_ayah || "",
+          fatherJob: beswan.keluarga?.pekerjaan_ayah || "",
+          fatherIncome: beswan.keluarga?.penghasilan_ayah || "",
+          motherName: beswan.keluarga?.nama_ibu || "",
+          motherJob: beswan.keluarga?.pekerjaan_ibu || "",
+          motherIncome: beswan.keluarga?.penghasilan_ibu || ""
+        },
+        addressData: beswan.alamat ? {
+          fullAddress: beswan.alamat.alamat_lengkap || "",
+          rt: (beswan.alamat as any).rt || "",
+          rw: (beswan.alamat as any).rw || "",
+          village: (beswan.alamat as any).kelurahan_desa || "",
+          district: (beswan.alamat as any).kecamatan || "",
+          city: (beswan.alamat as any).kota_kabupaten || "",
+          province: beswan.alamat.provinsi || "",
+          postalCode: beswan.alamat.kode_pos || "",
+          phone: (beswan.alamat as any).nomor_telepon || "",
+          emergencyContact: (beswan.alamat as any).kontak_darurat || ""
+        } : undefined,
+        educationData: beswan.sekolah ? {
+          schoolName: (beswan.sekolah as any).asal_sekolah || "",
+          schoolRegion: (beswan.sekolah as any).daerah_sekolah || "",
+          major: beswan.sekolah.jurusan || "",
+          level: (beswan.sekolah as any).tingkat_kelas || ""
+        } : undefined,
+        documents: [],
+        essays: []
+        };
+      });
+
+      setApplicants(transformedData);
+      updateStats(transformedData);
+      
+      if (isRefresh) {
+        showToast("Data berhasil diperbarui", "success");
       }
     } catch (err) {
-      console.error("Error in fetch function:", err);
+      console.error("Error fetching applicants:", err);
       setError("Gagal memuat data pendaftar beasiswa");
       showToast("Gagal memuat data pendaftar beasiswa", "error");
       
-      // Still show the UI even if data fetching fails
+      // Fallback ke empty array jika API gagal
       setApplicants([]);
       updateStats([]);
     } finally {
@@ -272,13 +247,10 @@ function PendaftarBeasiswaPageContent() {
       setIsRefreshing(false);
     }
   };
-  
+
   // Update dashboard stats
   const updateStats = (applicants: BeswanListItem[]) => {
     const total = applicants.length;
-    
-    // For now, simulate the other stats for a better UI experience
-    // Later, when status is implemented, this can be updated to show real data
     setStats({
       total,
       pending: Math.round(total * 0.3),
@@ -286,133 +258,145 @@ function PendaftarBeasiswaPageContent() {
       rejected: Math.round(total * 0.2)
     });
   };
-    // Handle period change
+
+  // Handle period change
   const handlePeriodChange = (value: string) => {
-    // Check if value is "all" which means all periods
-    if (value === "all") {
-      setSelectedPeriodId(undefined);
-      fetchApplicants(undefined);
-      return;
-    }
-    
-    // Otherwise, parse the period ID
-    const periodId = parseInt(value);
+    const periodId = value === "all" ? undefined : parseInt(value);
     setSelectedPeriodId(periodId);
     fetchApplicants(periodId);
   };
-  
-  // Format date helper
-  const formatDate = (dateString?: string): string => {
-    if (!dateString) return '-';
-    
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-    // Handle view detail
-  const handleViewDetail = async (beswan: BeswanListItem) => {
-    setSelectedBeswan(beswan);
-    setDetailDialog(true);
-    
+
+  // Handle detail click
+  const handleDetailClick = async (applicant: BeswanListItem) => {
     try {
-      // Fetch detailed data if needed
-      const detailedData = await ApplicantService.getBeswan(beswan.id!);
-      setSelectedBeswan(detailedData);
+      setSelectedBeswan(null);
+      setDetailDialog(true);
+      
+      // Gunakan getBeswan untuk mengambil detail dari API Laravel
+      const beswanId = parseInt(applicant.id);
+      const detailData = await ApplicantService.getBeswan(beswanId);
+      
+      // Transform detail data ke struktur yang diharapkan
+      const transformedDetail: BeswanListItem = {
+        id: detailData.id?.toString() || "0",
+        status: "Pending" as const,
+        applicationDate: detailData.created_at || new Date().toISOString(),
+        applicationDetails: {
+          program: "Beasiswa Pendidikan",
+          batch: "2024",
+          currentStage: "Review Dokumen",
+          stages: []
+        },
+        personalData: {
+          fullName: detailData.user?.name || "",
+          nickname: detailData.nama_panggilan || "",
+          birthDate: detailData.tanggal_lahir || "",
+          address: detailData.tempat_lahir || "",
+          gender: detailData.jenis_kelamin || "",
+          school: (detailData.sekolah as any)?.asal_sekolah || "",
+          religion: detailData.agama || "",
+          childNumber: detailData.keluarga?.anak_ke || 1,
+          totalSiblings: detailData.keluarga?.jumlah_saudara || 1,
+          whatsapp: detailData.user?.email || ""
+        },
+        familyData: {
+          fatherName: detailData.keluarga?.nama_ayah || "",
+          fatherJob: detailData.keluarga?.pekerjaan_ayah || "",
+          fatherIncome: detailData.keluarga?.penghasilan_ayah || "",
+          motherName: detailData.keluarga?.nama_ibu || "",
+          motherJob: detailData.keluarga?.pekerjaan_ibu || "",
+          motherIncome: detailData.keluarga?.penghasilan_ibu || ""
+        },
+        addressData: detailData.alamat ? {
+          fullAddress: detailData.alamat.alamat_lengkap || "",
+          rt: (detailData.alamat as any).rt || "",
+          rw: (detailData.alamat as any).rw || "",
+          village: (detailData.alamat as any).kelurahan_desa || "",
+          district: (detailData.alamat as any).kecamatan || "",
+          city: (detailData.alamat as any).kota_kabupaten || "",
+          province: detailData.alamat.provinsi || "",
+          postalCode: detailData.alamat.kode_pos || "",
+          phone: (detailData.alamat as any).nomor_telepon || "",
+          emergencyContact: (detailData.alamat as any).kontak_darurat || ""
+        } : undefined,
+        educationData: detailData.sekolah ? {
+          schoolName: (detailData.sekolah as any).asal_sekolah || "",
+          schoolRegion: (detailData.sekolah as any).daerah_sekolah || "",
+          major: detailData.sekolah.jurusan || "",
+          level: (detailData.sekolah as any).tingkat_kelas || ""
+        } : undefined,
+        documents: [],
+        essays: []
+      };
+      
+      setSelectedBeswan(transformedDetail);
+      
+      // Debug log untuk modal detail
+      console.log('handleViewDetail - detailData from API:', {
+        id: detailData.id,
+        alamat: detailData.alamat,
+        sekolah: detailData.sekolah
+      });
+      console.log('handleViewDetail - transformedDetail:', {
+        id: transformedDetail.id,
+        addressData: transformedDetail.addressData,
+        educationData: transformedDetail.educationData,
+        fullDetail: transformedDetail
+      });
     } catch (err) {
-      console.error("Error fetching beswan details:", err);
+      console.error("Error fetching applicant detail:", err);
       showToast("Gagal memuat detail pendaftar", "error");
+      setDetailDialog(false);
     }
   };
-  
+
   // Handle delete click
-  const handleDeleteClick = (beswan: BeswanListItem) => {
-    setSelectedBeswan(beswan);
+  const handleDeleteClick = (applicant: BeswanListItem) => {
+    setSelectedBeswan(applicant);
     setDeleteDialog(true);
   };
-  
-  // Handle delete beswan
+
+  // Handle delete confirm
   const handleDeleteBeswan = async () => {
-    if (!selectedBeswan || !selectedBeswan.id) return;
+    if (!selectedBeswan) return;
     
     try {
-      await ApplicantService.deleteBeswan(selectedBeswan.id);
+      // Gunakan deleteBeswan untuk menghapus data dari API Laravel
+      const beswanId = parseInt(selectedBeswan.id);
+      await ApplicantService.deleteBeswan(beswanId);
+      
+      // Remove from local state
+      setApplicants(prev => prev.filter(item => item.id !== selectedBeswan.id));
+      updateStats(applicants.filter(item => item.id !== selectedBeswan.id));
+      
       showToast("Data pendaftar berhasil dihapus", "success");
       setDeleteDialog(false);
-      
-      // Refresh data
-      fetchApplicants(selectedPeriodId);
+      setSelectedBeswan(null);
     } catch (err) {
-      console.error("Error deleting beswan:", err);
+      console.error("Error deleting applicant:", err);
       showToast("Gagal menghapus data pendaftar", "error");
     }
   };
-  
-  // Filter applicants by search term
-  const filteredApplicants = (applicants || []).filter(item => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      (item.user?.name || '').toLowerCase().includes(searchLower) ||
-      (item.nama_panggilan || '').toLowerCase().includes(searchLower) ||
-      (item.jenis_kelamin || '').toLowerCase().includes(searchLower) ||
-      (item.tempat_lahir || '').toLowerCase().includes(searchLower) ||
-      (item.agama || '').toLowerCase().includes(searchLower)
-    );
-  });
-
-  // Simple loading state
-  if (isLoading && !isRefreshing) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Memuat data pendaftar beasiswa...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Error state
-  if (error && !isRefreshing) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex flex-col items-center gap-2 text-destructive">
-          <XCircle className="w-8 h-8" />
-          <p>{error}</p>
-          <Button onClick={() => fetchApplicants(selectedPeriodId)} variant="outline" size="sm">
-            Coba Lagi
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       {/* Toast notification */}
       {toast.visible && (
-        <div className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
-          toast.type === "success" ? "bg-green-100 border border-green-200" : "bg-red-100 border border-red-200"
-        }`}>
-          <div className="flex items-center gap-2">
-            {toast.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-            ) : (
-              <XCircle className="w-4 h-4 text-red-500" />
-            )}
-            <span className={toast.type === "success" ? "text-green-800" : "text-red-800"}>
-              {toast.message}
-            </span>
-          </div>
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+          toast.type === "success" ? "bg-green-500" : "bg-red-500"
+        } text-white transition-all duration-300`}>
+          <p className="text-sm">{toast.message}</p>
         </div>
       )}
 
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Pendaftar Beasiswa</h2>        <div className="flex items-center gap-2">
+      {/* Action Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">Kelola dan pantau data pendaftar beasiswa</p>
+        </div>
+        <div className="flex gap-2">
           <Select value={selectedPeriodId?.toString() || "all"} onValueChange={handlePeriodChange}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[180px] sm:w-[220px]">
               <SelectValue placeholder="Pilih Periode" />
             </SelectTrigger>
             <SelectContent>
@@ -426,366 +410,490 @@ function PendaftarBeasiswaPageContent() {
           </Select>
           
           <Button 
+            onClick={() => fetchApplicants(selectedPeriodId, true)} 
             variant="outline" 
-            size="icon" 
-            onClick={() => fetchApplicants(selectedPeriodId, true)}
+            size="sm" 
             disabled={isRefreshing}
+            className="flex-1 sm:flex-none"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
 
       {/* Stats cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-none shadow-md bg-gradient-to-br from-[#406386]/90 to-[#406386]">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-white">Total Pendaftar</CardTitle>
-            <Users className="w-4 h-4 text-white/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Menunggu Review</CardTitle>
-            <div className="p-1 bg-yellow-100 rounded">
-              <Loader2 className="w-4 h-4 text-yellow-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Diterima</CardTitle>
-            <div className="p-1 bg-green-100 rounded">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.accepted}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
-            <div className="p-1 bg-red-100 rounded">
-              <XCircle className="w-4 h-4 text-red-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.rejected}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-0 shadow-md bg-gradient-to-br from-[#406386] to-[#406386]/90">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/90">Total Pendaftar</p>
+                  <p className="text-3xl font-bold text-white">{stats.total}</p>
+                </div>
+                <div className="p-3 rounded-full bg-white/20">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+          
+          <Card className="border-0 shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Menunggu Review</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.pending}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 rounded-full">
+                  <Loader2 className="w-6 h-6 text-yellow-600" />
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+          
+          <Card className="border-0 shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Diterima</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.accepted}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-full">
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+          
+          <Card className="border-0 shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Ditolak</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.rejected}</p>
+                </div>
+                <div className="p-3 bg-red-100 rounded-full">
+                  <XCircle className="w-6 h-6 text-red-600" />
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
 
-      {/* Applicants table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Daftar Pendaftar Beasiswa</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+      {/* Search and filter */}
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3 bg-muted/50">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <GraduationCap className="w-5 h-5" /> 
+            Daftar Pendaftar Beasiswa
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="mb-4 space-y-4 sm:space-y-0 sm:flex sm:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute w-4 h-4 -translate-y-1/2 left-3 top-1/2 text-muted-foreground" />
               <Input
-                placeholder="Cari berdasarkan nama..."
-                className="pl-8"
+                placeholder="Cari berdasarkan nama atau email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
               />
             </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filter status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="pending">Menunggu Review</SelectItem>
+                <SelectItem value="approved">Disetujui</SelectItem>
+                <SelectItem value="rejected">Ditolak</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Nama Lengkap</TableHead>
-                <TableHead>Nama Panggilan</TableHead>
-                <TableHead>Jenis Kelamin</TableHead>
-                <TableHead>TTL</TableHead>
-                <TableHead>Agama</TableHead>
-                <TableHead>Tanggal Daftar</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredApplicants.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center">
-                    Tidak ada data pendaftar
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredApplicants.map((applicant) => {
-                  // Format TTL
-                  const tempatLahir = applicant.tempat_lahir || '-';
-                  const tanggalLahir = applicant.tanggal_lahir ? formatDate(applicant.tanggal_lahir) : '-';
-                  const ttl = `${tempatLahir}, ${tanggalLahir}`;
-                  
-                  return (
-                    <TableRow key={applicant.id}>
-                      <TableCell className="font-mono text-xs text-gray-600">{applicant.id || '-'}</TableCell>
-                      <TableCell className="font-medium">{applicant.user?.name || '-'}</TableCell>
-                      <TableCell>{applicant.nama_panggilan || '-'}</TableCell>
-                      <TableCell>{applicant.jenis_kelamin || '-'}</TableCell>
-                      <TableCell>{ttl}</TableCell>
-                      <TableCell>{applicant.agama || '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{formatDate(applicant.created_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="w-8 h-8 p-0">
-                              <span className="sr-only">Menu</span>
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewDetail(applicant)}>
-                              <Eye className="w-4 h-4 mr-2" />
-                              Detail
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteClick(applicant)} className="text-red-600 focus:text-red-600">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Hapus
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+
+          {/* Data Table */}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-40">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">Memuat data...</span>
+            </div>
+          ) : filteredApplicants.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="p-3 bg-gray-100 rounded-full">
+                  <Users className="w-8 h-8 text-gray-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {searchTerm ? "Tidak ada hasil pencarian" : "Belum ada pendaftar"}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchTerm 
+                      ? `Tidak ditemukan pendaftar dengan kata kunci "${searchTerm}"`
+                      : "Belum ada data pendaftar beasiswa untuk periode ini"
+                    }
+                  </p>
+                </div>
+                {searchTerm && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchTerm("")}
+                    className="mt-2"
+                  >
+                    Hapus Pencarian
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-200 bg-gray-50">
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                      ID
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                      Informasi Pendaftar
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                      Detail Pribadi
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                      Tempat, Tanggal Lahir
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-gray-700 uppercase">
+                      Tanggal Daftar
+                    </TableHead>
+                    <TableHead className="px-6 py-4 text-xs font-semibold tracking-wider text-right text-gray-700 uppercase">
+                      Aksi
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="bg-white divide-y divide-gray-200">
+                  {filteredApplicants.map((applicant, index) => {
+                    const tempatLahir = applicant.personalData.address || '-';
+                    const tanggalLahir = applicant.personalData.birthDate ? formatDate(applicant.personalData.birthDate) : '-';
+                    const ttl = `${tempatLahir}, ${tanggalLahir}`;
+                    
+                    return (
+                      <TableRow key={applicant.id} className="transition-colors hover:bg-gray-50">
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center">
+                            <span className="inline-flex items-center justify-center w-8 h-8 text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
+                              {index + 1}
+                            </span>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#406386] to-[#406386]/80 rounded-full">
+                                <span className="text-sm font-medium text-white">
+                                  {(applicant.personalData.fullName || applicant.personalData.nickname || 'N')[0].toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {applicant.personalData.fullName || '-'}
+                              </p>
+                              <p className="text-sm text-gray-500 truncate">
+                                {applicant.personalData.whatsapp || '-'}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell className="px-6 py-4">
+                          <div>
+                            <p className="text-sm text-gray-900">
+                              <span className="font-medium">Panggilan:</span> {applicant.personalData.nickname || '-'}
+                            </p>
+                            <p className="mt-1 text-sm text-gray-500">
+                              <span className="font-medium">Gender:</span> {applicant.personalData.gender || '-'} • 
+                              <span className="ml-2 font-medium">Agama:</span> {applicant.personalData.religion || '-'}
+                            </p>
+                          </div>
+                        </TableCell>
+                        
+                        <TableCell className="px-6 py-4">
+                          <p className="text-sm text-gray-900">{ttl}</p>
+                        </TableCell>
+                        
+                        <TableCell className="px-6 py-4">
+                          <p className="text-sm text-gray-900">{formatDate(applicant.applicationDate)}</p>
+                        </TableCell>
+                        
+                        <TableCell className="px-6 py-4 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="w-8 h-8 p-0 hover:bg-gray-100"
+                              >
+                                <span className="sr-only">Menu aksi</span>
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem 
+                                onClick={() => handleDetailClick(applicant)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <Eye className="w-4 h-4" />
+                                Lihat Detail
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteClick(applicant)} 
+                                className="flex items-center gap-2 text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Hapus Data
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Detail Dialog */}
       <Dialog open={detailDialog} onOpenChange={setDetailDialog}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detail Pendaftar Beasiswa</DialogTitle>
-            <DialogDescription>
-              Informasi lengkap tentang pendaftar beasiswa.
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-[#406386]/10 rounded-full">
+                <Eye className="w-5 h-5 text-[#406386]" />
+              </div>
+              Detail Pendaftar Beasiswa
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Informasi lengkap tentang data pendaftar beasiswa
             </DialogDescription>
           </DialogHeader>
           
           {selectedBeswan ? (
-            <div className="space-y-6">
-              <div className="flex flex-col items-center p-4 space-y-4 rounded-lg sm:flex-row sm:space-y-0 sm:space-x-6 bg-gray-50">
-                <div className="flex items-center justify-center w-28 h-28 overflow-hidden bg-white rounded-full border-2 border-[#406386]/20 shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16 text-[#406386]/40" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
+            <div className="py-4 space-y-6">
+              {/* Profile Header */}
+              <div className="flex flex-col items-center p-6 space-y-4 rounded-xl sm:flex-row sm:space-y-0 sm:space-x-6 bg-gradient-to-r from-[#406386]/5 to-[#406386]/10">
+                <div className="flex items-center justify-center w-20 h-20 overflow-hidden bg-gradient-to-br from-[#406386] to-[#406386]/80 rounded-full shadow-lg">
+                  <span className="text-xl font-bold text-white">
+                    {(selectedBeswan.personalData.fullName || selectedBeswan.personalData.nickname || 'U')[0].toUpperCase()}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-medium text-[#406386]">{selectedBeswan.user?.name}</h3>
-                  <p className="text-sm text-gray-500">{selectedBeswan.user?.email}</p>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-2xl font-bold text-gray-900">{selectedBeswan.personalData.fullName || 'Tidak ada nama'}</h3>
+                  <p className="text-gray-600">{selectedBeswan.personalData.whatsapp || 'Tidak ada kontak'}</p>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <span>ID: {selectedBeswan.id}</span>
+                    <span>•</span>
+                    <span>Terdaftar: {formatDate(selectedBeswan.applicationDate)}</span>
+                  </div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Data Pribadi</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    <div>
-                      <p className="text-xs text-gray-500">Nama Lengkap</p>
-                      <p className="text-sm font-medium">{selectedBeswan.user?.name || '-'}</p>
+              {/* Information Grid */}
+              <div className="grid grid-cols-1 gap-6">
+                {/* Data Pribadi */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Pribadi
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Lengkap</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.fullName || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Panggilan</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.nickname || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">WhatsApp</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.whatsapp || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jenis Kelamin</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.gender || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Agama</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.religion || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Anak ke-</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.personalData.childNumber || '-'} dari {selectedBeswan.personalData.totalSiblings || '-'} bersaudara</p>
+                      </div>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Nama Panggilan</p>
-                      <p className="text-sm font-medium">{selectedBeswan.nama_panggilan || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Tempat, Tanggal Lahir</p>
-                      <p className="text-sm font-medium">
-                        {selectedBeswan.tempat_lahir || '-'}, {formatDate(selectedBeswan.tanggal_lahir)}
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Tempat, Tanggal Lahir</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">
+                        {selectedBeswan.personalData.address || '-'}, {selectedBeswan.personalData.birthDate ? formatDate(selectedBeswan.personalData.birthDate) : '-'}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Jenis Kelamin</p>
-                      <p className="text-sm font-medium">{selectedBeswan.jenis_kelamin || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Agama</p>
-                      <p className="text-sm font-medium">{selectedBeswan.agama || '-'}</p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
                 
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Pendidikan</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
+                {/* Data Pendidikan */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Pendidikan
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div>
-                      <p className="text-xs text-gray-500">Nama Sekolah/Perguruan Tinggi</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.nama_sekolah || '-'}</p>
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Sekolah/Perguruan Tinggi</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.schoolName || selectedBeswan.personalData.school || 'Belum diisi'}</p>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Jenjang</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.jenjang || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Jurusan</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.jurusan || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Tahun Masuk</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.tahun_masuk || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">IPK Terakhir</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.ipk_terakhir || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Semester Saat Ini</p>
-                      <p className="text-sm font-medium">{selectedBeswan.sekolah?.semester_saat_ini || '-'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Data Keluarga</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    <div>
-                      <p className="text-xs text-gray-500">Nama Ayah</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.nama_ayah || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Pekerjaan Ayah</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.pekerjaan_ayah || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Penghasilan Ayah</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.penghasilan_ayah || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Nama Ibu</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.nama_ibu || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Pekerjaan Ibu</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.pekerjaan_ibu || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Penghasilan Ibu</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.penghasilan_ibu || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Anak Ke</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.anak_ke || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Jumlah Saudara</p>
-                      <p className="text-sm font-medium">{selectedBeswan.keluarga?.jumlah_saudara || '-'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Alamat</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    <div>
-                      <p className="text-xs text-gray-500">Alamat Lengkap</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.alamat_lengkap || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Kelurahan</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.kelurahan || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Kecamatan</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.kecamatan || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Kota/Kabupaten</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.kota || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500">Provinsi</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.provinsi || '-'}</p>
-                    </div>                    <div>
-                      <p className="text-xs text-gray-500">Kode Pos</p>
-                      <p className="text-sm font-medium">{selectedBeswan.alamat?.kode_pos || '-'}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Dokumen Wajib */}
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Dokumen Wajib</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    {selectedBeswan.dokumen_wajib?.map((dokumen: Dokumen, index: number) => (
-                      <div key={`wajib-${index}`} className="flex items-center justify-between">
-                        <p className="text-sm">{dokumen.nama || dokumen.name || '-'}</p>                        <Badge 
-                          variant={dokumen.status === "complete" ? "outline" : "destructive"}
-                          className={dokumen.status === "complete" ? "border-green-200 bg-green-100 text-green-800 hover:bg-green-200" : "bg-red-100 text-red-800 hover:bg-red-200"}
-                        >
-                          {dokumen.status === "complete" ? "Lengkap" : "Belum Lengkap"}
-                        </Badge>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jenjang</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.level || '-'}</p>
                       </div>
-                    )) || (
-                      <p className="text-sm italic text-gray-500">Tidak ada data dokumen wajib</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Dokumen Media Sosial */}
-                <div>
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Media Sosial</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    {selectedBeswan.media_sosial?.map((media: MediaSosial, index: number) => (
-                      <div key={`sosmed-${index}`}>
-                        <p className="text-xs text-gray-500">{media.jenis || media.type || '-'}</p>
-                        <p className="text-sm font-medium">
-                          <a 
-                            href={media.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {media.username || media.url || '-'}
-                          </a>
-                        </p>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Jurusan</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.major || '-'}</p>
                       </div>
-                    )) || (
-                      <p className="text-sm italic text-gray-500">Tidak ada data media sosial</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Dokumen Pendukung */}
-                <div className="md:col-span-2">
-                  <h4 className="mb-2 text-sm font-medium text-gray-500">Dokumen Pendukung</h4>
-                  <div className="p-4 space-y-3 rounded-md bg-gray-50">
-                    {selectedBeswan.dokumen_pendukung?.map((dokumen: Dokumen, index: number) => (
-                      <div key={`pendukung-${index}`} className="flex items-center justify-between pb-2 border-b last:border-b-0 last:pb-0">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Daerah Sekolah</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.educationData?.schoolRegion || '-'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Data Keluarga */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Keluarga
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                      {/* Data Ayah */}
+                      <div className="space-y-4">
+                        <h4 className="pb-2 font-medium text-gray-800 border-b border-gray-200">Data Ayah</h4>
                         <div>
-                          <p className="text-sm font-medium">{dokumen.nama || dokumen.name || '-'}</p>
-                          <p className="text-xs text-gray-500">{dokumen.deskripsi || dokumen.description || '-'}</p>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherName || '-'}</p>
                         </div>
-                        <Button variant="outline" size="sm" className="text-xs" asChild>
-                          <a href={dokumen.url} target="_blank" rel="noopener noreferrer">
-                            Lihat Dokumen
-                          </a>
-                        </Button>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Pekerjaan Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherJob || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Penghasilan Ayah</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.fatherIncome || '-'}</p>
+                        </div>
                       </div>
-                    )) || (
-                      <p className="text-sm italic text-gray-500">Tidak ada dokumen pendukung</p>
-                    )}
-                  </div>
-                </div>
+                      
+                      {/* Data Ibu */}
+                      <div className="space-y-4">
+                        <h4 className="pb-2 font-medium text-gray-800 border-b border-gray-200">Data Ibu</h4>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nama Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherName || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Pekerjaan Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherJob || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Penghasilan Ibu</p>
+                          <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.familyData.motherIncome || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Data Alamat */}
+                <Card className="border-0 shadow-sm bg-gray-50/50">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg text-gray-800">
+                      <div className="w-2 h-2 bg-[#406386] rounded-full"></div>
+                      Data Alamat
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Alamat Lengkap</p>
+                      <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.fullAddress || '-'}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">RT</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.rt || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">RW</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.rw || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kelurahan/Desa</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.village || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kecamatan</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.district || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kota/Kabupaten</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.city || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Provinsi</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.province || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kode Pos</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.postalCode || '-'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Nomor Telepon</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.phone || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Kontak Darurat</p>
+                        <p className="mt-1 text-sm font-medium text-gray-900">{selectedBeswan.addressData?.emergencyContact || '-'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-40">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-[#406386]" />
+                <p className="text-sm text-gray-600">Memuat detail pendaftar...</p>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -793,33 +901,54 @@ function PendaftarBeasiswaPageContent() {
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Hapus Data Pendaftar</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus data pendaftar ini? Tindakan ini tidak dapat dibatalkan.
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="pb-4 text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full">
+              <Trash2 className="w-8 h-8 text-red-600" />
+            </div>
+            <DialogTitle className="text-xl text-gray-900">Hapus Data Pendaftar</DialogTitle>
+            <DialogDescription className="mt-2 text-gray-600">
+              Tindakan ini tidak dapat dibatalkan. Data pendaftar akan dihapus secara permanen dari sistem.
             </DialogDescription>
           </DialogHeader>
+          
           <div className="py-4">
             {selectedBeswan && (
-              <div className="p-4 mb-4 rounded-md bg-gray-50">
-                <p className="font-medium">{selectedBeswan.user?.name}</p>
-                <p className="text-sm text-gray-500">{selectedBeswan.user?.email}</p>
+              <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full">
+                    <span className="text-sm font-medium text-red-700">
+                      {(selectedBeswan.personalData.fullName || 'U')[0].toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{selectedBeswan.personalData.fullName || 'Nama tidak tersedia'}</p>
+                    <p className="text-sm text-gray-600">{selectedBeswan.personalData.whatsapp || 'Kontak tidak tersedia'}</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog(false)}>
+          
+          <DialogFooter className="flex gap-3 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialog(false)}
+              className="flex-1 border-gray-300 hover:bg-gray-50"
+            >
               Batal
             </Button>
-            <Button variant="destructive" onClick={handleDeleteBeswan}>
-              Hapus
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteBeswan}
+              className="flex-1 bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Hapus Permanen
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>    </div>
+      </Dialog>
+    </div>
   );
 }
-
-// Export the component with error boundary
-export default PendaftarBeasiswaWithErrorBoundary;
