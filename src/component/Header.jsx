@@ -133,15 +133,37 @@ export default function Header() {
     
     return () => clearInterval(intervalId);
   }, []);
-  // Function to check if there's an active period - using the same logic as periode-beasiswa-page.tsx
+  // Function to check if there's an active period - mengecek database dengan 2 kondisi
   const hasActivePeriod = () => {
     if (!beasiswaPeriods || beasiswaPeriods.length === 0) return false;
-    // According to database structure, we only need to check status column
-    const hasActive = beasiswaPeriods.some(period => period.status === 'active');
+    
+    // Cek periode yang status = 'active' DAN is_active = 1 DAN masih dalam periode pendaftaran
+    const now = new Date();
+    const hasActive = beasiswaPeriods.some(period => {
+      const isStatusActive = period.status === 'active';
+      const isActiveFlag = period.is_active === 1 || period.is_active === true;
+      
+      // Cek apakah masih dalam periode pendaftaran
+      const startDate = new Date(period.mulai_pendaftaran);
+      const endDate = new Date(period.akhir_pendaftaran);
+      const isInRegistrationPeriod = now >= startDate && now <= endDate;
+      
+      return isStatusActive && isActiveFlag && isInRegistrationPeriod;
+    });
+    
     console.log('Active periods check:', { 
       periodsCount: beasiswaPeriods.length,
       hasActive,
-      periods: beasiswaPeriods.map(p => ({ id: p.id, name: p.nama_periode, status: p.status }))
+      currentDate: now.toISOString().split('T')[0],
+      periods: beasiswaPeriods.map(p => ({ 
+        id: p.id, 
+        name: p.nama_periode, 
+        status: p.status,
+        is_active: p.is_active,
+        mulai_pendaftaran: p.mulai_pendaftaran,
+        akhir_pendaftaran: p.akhir_pendaftaran,
+        isInPeriod: now >= new Date(p.mulai_pendaftaran) && now <= new Date(p.akhir_pendaftaran)
+      }))
     });
     return hasActive;
   };

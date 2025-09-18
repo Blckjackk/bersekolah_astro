@@ -28,7 +28,7 @@ import AppLayout from "../../layout/app-layout.astro";
                 <div class="mb-6 sm:mb-8 lg:mb-10">
                     <div class="max-w-2xl px-2 py-4 mx-auto sm:px-4 sm:py-6">
                         <h3 class="mb-4 text-base font-bold text-center text-white sm:text-lg lg:text-xl sm:mb-6">
-                            Pendaftaran Ditutup Dalam:
+                            Informasi Pendaftaran:
                         </h3>
                         <div id="countdown-container" class="flex items-center justify-center">
                             <!-- Loading State -->
@@ -106,30 +106,47 @@ import AppLayout from "../../layout/app-layout.astro";
                             
                             <!-- Error State -->
                             <div class="hidden countdown-error">
-                                <div class="px-4 py-3 border-2 border-red-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:px-6 sm:py-4 sm:rounded-xl">
+                                <div class="px-4 py-3 border-2 border-blue-100 rounded-lg shadow-lg bg-white/90 backdrop-blur-sm sm:px-6 sm:py-4 sm:rounded-xl">
                                     <div class="flex items-center space-x-2 sm:space-x-3">
-                                        <svg class="w-5 h-5 text-red-500 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        <svg class="w-5 h-5 text-[#406386] sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
-                                        <p class="text-sm font-bold text-red-600 sm:text-base lg:text-lg">Tidak ada periode aktif</p>
+                                        <p class="text-sm font-bold text-[#406386] sm:text-base lg:text-lg">Beasiswa akan segera dibuka kembali</p>
                                     </div>
+                                    <p class="mt-2 text-xs text-[#406386]/80 sm:text-sm">Pantau terus informasi terbaru kami</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- CTA Button -->
+                <!-- CTA Button - Conditional based on active period -->
                 <div class="flex justify-center mt-8 sm:mt-10 lg:mt-12">
-                    <a href="/daftar" class="inline-block group">
-                        <button class="bg-white text-[#406386] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-4 rounded-full font-semibold text-sm sm:text-base lg:text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-                            Daftar Sekarang
-                        </button>
-                    </a>
+                    <div id="cta-container" class="text-center">
+                        <!-- Active period - Show register button -->
+                        <a href="/daftar" id="cta-active" class="group hidden">
+                            <button class="bg-white text-[#406386] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-4 rounded-full font-semibold text-sm sm:text-base lg:text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                                Daftar Sekarang
+                            </button>
+                        </a>
+                        
+                        <!-- No active period - Hide completely -->
+                        <div id="cta-inactive" class="hidden">
+                            <!-- Intentionally empty - no button when inactive -->
+                        </div>
+                    </div>
                 </div>
                 
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
+                        // CTA elements
+                        const ctaActive = document.getElementById('cta-active') as HTMLElement | null;
+                        const ctaInactive = document.getElementById('cta-inactive') as HTMLElement | null;
+                        
+                        // Bottom CTA elements
+                        const bottomCtaActive = document.getElementById('bottom-cta-active') as HTMLElement | null;
+                        const bottomCtaInactive = document.getElementById('bottom-cta-inactive') as HTMLElement | null;
+                        
                         // Type casting DOM elements to avoid null warnings
                         const countdownLoading = document.querySelector('.countdown-loading') as HTMLElement | null;
                         const countdownDisplay = document.querySelector('.countdown-display') as HTMLElement | null;
@@ -143,10 +160,84 @@ import AppLayout from "../../layout/app-layout.astro";
                         
                         // Safety check for DOM elements
                         if (!countdownLoading || !countdownDisplay || !countdownExpired || !countdownError ||
-                            !daysElement || !hoursElement || !minutesElement || !secondsElement) {
+                            !daysElement || !hoursElement || !minutesElement || !secondsElement ||
+                            !ctaActive || !ctaInactive || !bottomCtaActive || !bottomCtaInactive) {
                             console.error('Required DOM elements not found for countdown');
                             return;
                         }
+                        
+                        // Function to check active periods and update CTA
+                        async function checkActivePeriods() {
+                            try {
+                                const baseURL = 'http://localhost:8000/api';
+                                const response = await fetch(`${baseURL}/public/beasiswa-periods`);
+                                
+                                if (!response.ok) {
+                                    throw new Error('Failed to fetch periods');
+                                }
+                                
+                                const data = await response.json();
+                                const periods = data.data || [];
+                                
+                                // Check if there's an active period
+                                const now = new Date();
+                                const hasActivePeriod = periods.some((period: any) => {
+                                    const isStatusActive = period.status === 'active';
+                                    const isActiveFlag = period.is_active === 1 || period.is_active === true;
+                                    
+                                    const startDate = new Date(period.mulai_pendaftaran);
+                                    const endDate = new Date(period.akhir_pendaftaran);
+                                    const isInRegistrationPeriod = now >= startDate && now <= endDate;
+                                    
+                                    return isStatusActive && isActiveFlag && isInRegistrationPeriod;
+                                });
+                                
+                                // Update CTA button
+                                if (hasActivePeriod) {
+                                    if (ctaActive && ctaInactive) {
+                                        ctaActive.classList.remove('hidden');
+                                        ctaActive.classList.add('inline-block');
+                                        ctaInactive.classList.add('hidden');
+                                    }
+                                    // Update bottom CTA
+                                    if (bottomCtaActive && bottomCtaInactive) {
+                                        bottomCtaActive.classList.remove('hidden');
+                                        bottomCtaActive.classList.add('inline-block');
+                                        bottomCtaInactive.classList.add('hidden');
+                                    }
+                                } else {
+                                    if (ctaActive && ctaInactive) {
+                                        ctaActive.classList.add('hidden');
+                                        ctaInactive.classList.remove('hidden');
+                                        ctaInactive.classList.add('block');
+                                    }
+                                    // Hide bottom CTA completely when inactive
+                                    if (bottomCtaActive && bottomCtaInactive) {
+                                        bottomCtaActive.classList.add('hidden');
+                                        bottomCtaInactive.classList.remove('hidden');
+                                    }
+                                }
+                                
+                                console.log('Active periods check:', { hasActivePeriod, periods });
+                                
+                            } catch (error) {
+                                console.error('Error checking periods:', error);
+                                // On error, hide active button and show nothing
+                                if (ctaActive && ctaInactive) {
+                                    ctaActive.classList.add('hidden');
+                                    ctaInactive.classList.remove('hidden');
+                                    ctaInactive.classList.add('block');
+                                }
+                                // Hide bottom CTA on error
+                                if (bottomCtaActive && bottomCtaInactive) {
+                                    bottomCtaActive.classList.add('hidden');
+                                    bottomCtaInactive.classList.remove('hidden');
+                                }
+                            }
+                        }
+                        
+                        // Check active periods first
+                        checkActivePeriods();
                         
                         // Type definitions for API response
                         interface CountdownResponse {
@@ -167,18 +258,34 @@ import AppLayout from "../../layout/app-layout.astro";
                         // Fetch countdown data from API
                         fetch(API_URL)
                             .then(response => {
+                                console.log('Countdown API response status:', response.status);
+                                
+                                // Handle non-200 responses (like 404 when no active period)
                                 if (!response.ok) {
+                                    if (response.status === 404) {
+                                        // No active period - show error state
+                                        console.log('No active period found (404)');
+                                        countdownLoading.classList.add('hidden');
+                                        countdownError.classList.remove('hidden');
+                                        return null;
+                                    }
                                     throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
                                 }
                                 return response.json() as Promise<CountdownResponse>;
                             })
-                            .then((data: CountdownResponse) => {
+                            .then((data: CountdownResponse | null) => {
                                 console.log('Countdown data:', data);
                                 
                                 // Hide loading indicator
                                 countdownLoading.classList.add('hidden');
-                                  // Handle expired registration or no active period
+                                
+                                // Handle null response (from 404 error above)
                                 if (!data) {
+                                    return;
+                                }
+                                
+                                // Handle expired registration or no active period
+                                if (!data || data.status === 'error') {
                                     countdownError.classList.remove('hidden');
                                     return;
                                 }
@@ -620,13 +727,19 @@ import AppLayout from "../../layout/app-layout.astro";
           Bergabunglah dengan ribuan pelajar lainnya yang telah merasakan manfaat Program Beasiswa Bersekolah
         </p>
         
-        <!-- Single CTA Button -->
-        <div class="mb-6 sm:mb-8 lg:mb-10">
-          <a href="/masuk" class="inline-block group">
+        <!-- Single CTA Button - Dynamic based on active period -->
+        <div id="bottom-cta-container" class="mb-6 sm:mb-8 lg:mb-10">
+          <!-- Active period button -->
+          <a href="/daftar" id="bottom-cta-active" class="group hidden">
             <button class="bg-white text-[#406386] px-6 sm:px-8 lg:px-10 py-2 sm:py-3 lg:py-4 rounded-full font-semibold text-sm sm:text-base lg:text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
               Daftar Beasiswa Sekarang
             </button>
           </a>
+          
+          <!-- Inactive period - Hide button completely -->
+          <div id="bottom-cta-inactive" class="hidden">
+            <!-- Intentionally empty - no button when inactive -->
+          </div>
         </div>
         
       </div>
