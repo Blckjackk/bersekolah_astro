@@ -1,0 +1,7 @@
+<!-- Default Testimoni Image -->
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#f3f4f6"/>
+  <circle cx="200" cy="160" r="50" fill="#d1d5db"/>
+  <path d="M120 320c0-44.18 35.82-80 80-80s80 35.82 80 80" fill="#d1d5db"/>
+  <text x="200" y="360" text-anchor="middle" fill="#6b7280" font-family="Arial" font-size="14">Default Testimoni</text>
+</svg>
