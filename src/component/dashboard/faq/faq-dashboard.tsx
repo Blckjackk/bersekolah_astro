@@ -250,29 +250,53 @@ export default function FaqDashboard() {
 
   if (isLoading) {
     return (
-      <div className="container p-6 mx-auto">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            <div className="text-center">
-              <h3 className="font-semibold">Memuat FAQ...</h3>
-              <p className="text-sm text-muted-foreground">Mengambil data FAQ dari server</p>
-            </div>
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">FAQ Management</h1>
+            <p className="text-muted-foreground">
+              Kelola Frequently Asked Questions
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
+            <Button variant="outline" disabled>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            <Button disabled className="bg-[#406386] hover:bg-[#375573]">
+              <Plus className="w-4 h-4 mr-2" />
+              Tambah FAQ
+            </Button>
           </div>
         </div>
+
+        <Card className="bg-muted/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <div className="text-center">
+                  <h3 className="font-semibold">Memuat FAQ...</h3>
+                  <p className="text-sm text-muted-foreground">Mengambil data FAQ dari server</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="container p-6 mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">FAQ Management</h1>
-          <p className="mt-1 text-gray-500">Kelola Frequently Asked Questions</p>
+          <h1 className="text-3xl font-bold tracking-tight">FAQ Management</h1>
+          <p className="text-muted-foreground">
+            Kelola Frequently Asked Questions
+          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
           <Button variant="outline" onClick={fetchFaqs}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
@@ -284,56 +308,58 @@ export default function FaqDashboard() {
         </div>
       </div>
 
-      {/* FAQ Cards */}
-      <div className="space-y-4">
-        {faqs.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-500">Belum ada FAQ. Klik tombol "Tambah FAQ" untuk membuat FAQ baru.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          faqs.map((faq) => (
-            <Card key={faq.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{faq.pertanyaan}</CardTitle>
-                    <CardDescription className="mt-2">{faq.jawaban}</CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    {getStatusBadge(faq.status)}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-500">
-                    Dibuat: {new Date(faq.created_at).toLocaleDateString('id-ID')}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => openEditDialog(faq)}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => openDeleteDialog(faq)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Hapus
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      <Card className="bg-muted/50">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {faqs.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">Belum ada FAQ. Klik tombol "Tambah FAQ" untuk membuat FAQ baru.</p>
+              </div>
+            ) : (
+              faqs.map((faq) => (
+                <Card key={faq.id} className="bg-background">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{faq.pertanyaan}</CardTitle>
+                        <CardDescription className="mt-2">{faq.jawaban}</CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        {getStatusBadge(faq.status)}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Dibuat: {new Date(faq.created_at).toLocaleDateString('id-ID')}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openEditDialog(faq)}
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => openDeleteDialog(faq)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Hapus
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Dialog Form */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

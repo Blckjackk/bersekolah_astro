@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ArtikelService } from "../../lib/artikel-service";
+import { getEnvironmentUrls } from "../../lib/utils/url-helper";
 import {
   Card,
   Image
@@ -197,7 +198,7 @@ const ArtikelPage = () => {
                     asChild
                     className="w-full bg-white text-[#406386] border-2 border-[#406386] hover:bg-[#406386] hover:text-white transition-all duration-300 rounded-lg flex items-center justify-center group mt-4"
                   >
-                    <a href={`/artikel-detail?id=${article.id}`}>
+                    <a href={`/company-profile/artikel-detail?id=${article.id}`}>
                       <span>Baca Selengkapnya</span>
                       <svg
                         className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
@@ -272,7 +273,7 @@ const ArtikelPage = () => {
                     asChild
                     className="w-full bg-white text-[#406386] border-2 border-[#406386] hover:bg-[#406386] hover:text-white transition-all duration-300 rounded-lg flex items-center justify-center group mt-4"
                   >
-                    <a href={`/artikel-detail?id=${article.id}`}>
+                    <a href={`/company-profile/artikel-detail?id=${article.id}`}>
                       <span>Baca Selengkapnya</span>
                       <svg
                         className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"

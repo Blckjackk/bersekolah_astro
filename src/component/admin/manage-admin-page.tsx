@@ -463,18 +463,23 @@ export default function ManageAdminPage() {
   };
   
   return (
-    <div className="container py-6 mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Manajemen Admin</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Manajemen Admin</h1>
           <p className="text-muted-foreground">
             Kelola akun admin untuk mengakses dashboard
           </p>
         </div>
 
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
           {isSuperAdmin && (
             <>
+              <Button variant="outline" onClick={fetchAdmins}>
+                <RefreshCcw className="mr-2 w-4 h-4" />
+                Refresh
+              </Button>
+              
               <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogTrigger asChild>
                   <Button onClick={() => {
@@ -600,17 +605,12 @@ export default function ManageAdminPage() {
                   </form>
                 </DialogContent>
               </Dialog>
-              
-              <Button variant="outline" onClick={fetchAdmins}>
-                <RefreshCcw className="mr-2 w-4 h-4" />
-                Refresh
-              </Button>
             </>
           )}
         </div>
       </div>
       
-      <div className="flex gap-3 items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 w-4 h-4 transform -translate-y-1/2 text-muted-foreground" />
           <Input 
@@ -621,9 +621,9 @@ export default function ManageAdminPage() {
           />
         </div>
       </div>
-        <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
+
+      <Card className="bg-muted/50">
+        <CardContent className="p-6">{isLoading ? (
             <div className="flex flex-col gap-4 justify-center items-center p-8">
               <div className="w-16 h-16 rounded-full border-4 animate-spin border-primary/20 border-t-primary"></div>
               <p className="text-muted-foreground">Memuat data admin...</p>
@@ -637,72 +637,73 @@ export default function ManageAdminPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>No. Telepon</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Terdaftar</TableHead>
-                  <TableHead>Diperbarui</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAdmins.length > 0 ? (
-                  filteredAdmins.map((admin) => (
-                    <TableRow key={admin.id}>
-                      <TableCell className="font-medium">{admin.name}</TableCell>
-                      <TableCell>{admin.email}</TableCell>
-                      <TableCell>{admin.phone || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Shield className={`w-4 h-4 mr-1 ${admin.role === 'superadmin' ? 'text-red-500' : 'text-blue-500'}`} />
-                          <span className={admin.role === 'superadmin' ? 'text-red-500 font-medium' : ''}>
-                            {admin.role === 'admin' ? 'Admin' : 'Super Admin'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatDate(admin.created_at)}</TableCell>
-                      <TableCell>{formatDate(admin.updated_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handleEdit(admin)}
-                          disabled={admin.role === 'superadmin' && admin.id !== 1} // Prevent editing other superadmins
-                        >
-                          <Pencil className="w-4 h-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-red-500 hover:text-red-600" 
-                          onClick={() => openDeleteDialog(admin)}
-                          disabled={admin.role === 'superadmin' && admin.id !== 1} // Prevent deleting other superadmins
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
+            <div className="rounded-md border bg-background">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>No. Telepon</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Terdaftar</TableHead>
+                    <TableHead>Diperbarui</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAdmins.length > 0 ? (
+                    filteredAdmins.map((admin) => (
+                      <TableRow key={admin.id}>
+                        <TableCell className="font-medium">{admin.name}</TableCell>
+                        <TableCell>{admin.email}</TableCell>
+                        <TableCell>{admin.phone || "-"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Shield className={`w-4 h-4 mr-1 ${admin.role === 'superadmin' ? 'text-red-500' : 'text-blue-500'}`} />
+                            <span className={admin.role === 'superadmin' ? 'text-red-500 font-medium' : ''}>
+                              {admin.role === 'admin' ? 'Admin' : 'Super Admin'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatDate(admin.created_at)}</TableCell>
+                        <TableCell>{formatDate(admin.updated_at)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleEdit(admin)}
+                            disabled={admin.role === 'superadmin' && admin.id !== 1} // Prevent editing other superadmins
+                          >
+                            <Pencil className="w-4 h-4" />
+                            <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-red-500 hover:text-red-600" 
+                            onClick={() => openDeleteDialog(admin)}
+                            disabled={admin.role === 'superadmin' && admin.id !== 1} // Prevent deleting other superadmins
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center">
+                        {searchQuery 
+                          ? "Tidak ada admin yang sesuai dengan pencarian Anda" 
+                          : "Tidak ada admin yang terdaftar. Klik tombol 'Tambah Admin' untuk menambahkan admin baru."}
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} className="py-8 text-center">
-                      {searchQuery 
-                        ? "Tidak ada admin yang sesuai dengan pencarian Anda" 
-                        : "Tidak ada admin yang terdaftar. Klik tombol 'Tambah Admin' untuk menambahkan admin baru."}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between border-t">
-          </CardFooter>
       </Card>
 
       {/* Dialog konfirmasi hapus admin */}

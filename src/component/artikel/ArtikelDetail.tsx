@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { getEnvironmentUrls } from "../../lib/utils/url-helper";
 
 interface Article {
   id: number;
@@ -19,9 +20,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
 
   // Helper function to get correct image URL
   const getImageUrl = (article: Article | null) => {
-    const baseUrl = import.meta.env.PROD 
-      ? 'https://sandybrown-capybara-903436.hostingersite.com'
-      : 'http://localhost:8000';
+    const { baseUrl } = getEnvironmentUrls();
     
     if (!article) return `${baseUrl}/storage/defaults/artikel-default.jpg`;
 
@@ -56,7 +55,7 @@ const ArtikelDetail = ({ articleId }: { articleId: string | null }) => {
       return;
     }
 
-    fetch(`${import.meta.env.PROD ? 'https://sandybrown-capybara-903436.hostingersite.com' : 'http://localhost:8000'}/api/konten/${articleId}`)
+    fetch(`/api/konten/${articleId}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("Article detail API response:", data);

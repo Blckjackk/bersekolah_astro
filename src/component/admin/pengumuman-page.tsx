@@ -12,7 +12,8 @@ import {
   Italic,
   Heading2,
   List,
-  Link
+  Link,
+  Bell
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -313,26 +314,27 @@ export default function PengumumanPage() {
     .map(a => a.tag as string))];
 
   return (
-    <div className="container p-6 mx-auto">
+    <div className="space-y-4 sm:space-y-6">
       {/* Toast message */}
       {toast.visible && (
-        <div className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
-          toast.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-        }`}>
-          <p>{toast.message}</p>
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+          toast.type === "success" ? "bg-green-500" : "bg-red-500"
+        } text-white transition-all duration-300`}>
+          <p className="text-sm">{toast.message}</p>
         </div>
       )}
       
       {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Pengumuman</h1>
-          <p className="mt-1 text-gray-500">Kelola pengumuman Bersekolah</p>
+          <h1 className="text-xl sm:text-2xl font-bold">Pengumuman</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Kelola pengumuman Bersekolah</p>
         </div>
         <div className="flex gap-2">
           <Button 
             variant="outline"
-            className="gap-2"
+            size="sm"
+            className="gap-2 flex-1 sm:flex-none"
             onClick={() => fetchAnnouncements(true)}
             disabled={isRefreshing}
           >
@@ -341,7 +343,8 @@ export default function PengumumanPage() {
           </Button>
           <Button 
             variant="default"
-            className="bg-[#406386] hover:bg-[#2c4863]"
+            size="sm"
+            className="bg-[#406386] hover:bg-[#2c4863] flex-1 sm:flex-none"
             onClick={openCreateDialog}
           >
             + Tambah Pengumuman
@@ -350,44 +353,49 @@ export default function PengumumanPage() {
       </div>
       
       {/* Main content */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <CardTitle>Daftar Pengumuman</CardTitle>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              {/* Search input */}
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Cari pengumuman..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="absolute text-gray-500 transform -translate-y-1/2 left-2 top-1/2"
-                >
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.3-4.3"></path>
-                </svg>
-              </div>
-              
-              {/* Filters */}
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-muted/50 pb-2 sm:pb-4">
+          <CardTitle className="flex gap-2 items-center text-base sm:text-lg">
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5" /> 
+            Daftar Pengumuman
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <div className="mb-4 space-y-2 sm:space-y-0 sm:flex sm:gap-2">
+            {/* Search input */}
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                placeholder="Cari pengumuman..."
+                className="pl-8 text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="absolute text-muted-foreground transform -translate-y-1/2 left-2 top-1/2"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+            </div>
+            
+            {/* Filters */}
+            <div className="flex gap-2">
               <Select
                 value={statusFilter}
                 onValueChange={setStatusFilter}
               >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter Status" />
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
@@ -401,8 +409,8 @@ export default function PengumumanPage() {
                 value={tagFilter}
                 onValueChange={setTagFilter}
               >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter Tag" />
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <SelectValue placeholder="Tag" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Tag</SelectItem>
@@ -416,8 +424,6 @@ export default function PengumumanPage() {
               </Select>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>

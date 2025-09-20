@@ -740,7 +740,7 @@ export default function SeleksiBerkasPage() {
                 </div>
                 <Button 
                   onClick={() => setFinalizeDialog(true)}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-green-600 hover:bg-green-700 touch-manipulation"
                   size="lg"
                 >
                   <Send className="w-5 h-5 mr-2" />
@@ -839,7 +839,7 @@ export default function SeleksiBerkasPage() {
 
       {/* Dialog Finalisasi */}
       <Dialog open={finalizeDialog} onOpenChange={setFinalizeDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <Send className="w-5 h-5 mr-2 text-green-600" />
@@ -882,7 +882,7 @@ export default function SeleksiBerkasPage() {
             <Button 
               onClick={handleFinalize}
               disabled={isFinalizing}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 touch-manipulation"
             >
               {isFinalizing ? (
                 <>

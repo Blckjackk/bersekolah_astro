@@ -211,10 +211,10 @@ export default function MentorPage() {
     
     // Validasi file foto jika ada
     if (photoFile) {
-      // Validasi ukuran file (max 2MB)
-      const maxSize = 2 * 1024 * 1024; // 2MB
+      // Validasi ukuran file (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
       if (photoFile.size > maxSize) {
-        showToast("Ukuran foto maksimal 2MB", "error");
+        showToast("Ukuran foto maksimal 10MB", "error");
         return;
       }
       
@@ -276,10 +276,10 @@ export default function MentorPage() {
     
     // Validasi file foto jika ada
     if (photoFile) {
-      // Validasi ukuran file (max 2MB)
-      const maxSize = 2 * 1024 * 1024; // 2MB
+      // Validasi ukuran file (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
       if (photoFile.size > maxSize) {
-        showToast("Ukuran foto maksimal 2MB", "error");
+        showToast("Ukuran foto maksimal 10MB", "error");
         return;
       }
       
@@ -674,7 +674,7 @@ export default function MentorPage() {
                     className="text-sm"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Format: JPG, PNG. Maks 2MB.
+                    Format: JPG, PNG. Maks 10MB.
                   </p>
                 </div>
                 {formData.photo && photoFile && (
